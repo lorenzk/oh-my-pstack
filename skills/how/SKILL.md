@@ -21,19 +21,19 @@ When in doubt, take the simple path.
 
 ## Step 2a. Explore (complex questions only)
 
-Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Launch all explorers concurrently through the host's task facility. Use the configured `how explorer` choice when present; otherwise use the canonical `explorer` role. Every explorer is read-only and receives a standalone brief.
+Decompose the question into 2 to 4 exploration angles, each a distinct slice of the subsystem. Launch all explorers concurrently through the host's task facility. On Pi, call `pstack_launch` with model role `how explorer` and execution role `explorer` for each angle. The router supplies the configured per-run model; stop if policy or delegation is unavailable. Every explorer is read-only and receives a standalone brief.
 
 Each explorer gets the prompt in `references/explorer-prompt.md` with its angle filled in. Then go to Step 3.
 
 ## Step 2b. Direct Explain (simple questions)
 
-Launch one read-only child that explores and explains in one pass. Use the configured `how explainer` choice when present; otherwise use the canonical `synthesizer` role.
+Launch one read-only child that explores and explains in one pass. On Pi, call `pstack_launch` with model role `how explainer` and execution role `synthesizer`.
 
 Build its prompt from `references/explainer-prompt.md` without the explorer-findings section. Go to Step 4.
 
 ## Step 3. Synthesize (complex questions only)
 
-Once all explorers return, launch one read-only child to synthesize their findings into a coherent explanation. Use the configured `how explainer` choice when present; otherwise use the canonical `synthesizer` role.
+Once all explorers return and pass `pstack_status`, launch one read-only child to synthesize their findings. On Pi, call `pstack_launch` with model role `how explainer` and execution role `synthesizer`.
 
 Build its prompt from `references/explainer-prompt.md` with every explorer's findings filled in.
 

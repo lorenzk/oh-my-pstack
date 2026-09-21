@@ -103,7 +103,9 @@ Use these canonical roles:
 
 Use only these canonical lifecycle protocols: **Bounded session**, **Panel**, **Long-lived owner**, and **One-shot watcher**. Their mechanics live in the active adapter. Start every Panel participant before waiting for any result. Keep implementers, reviewers, judges, and synthesizers separate. A child never starts another child. It returns proposed briefs to the root.
 
-Pass concise file pointers and explicit worktree or output paths. Review every artifact and run parent verification. Use a fresh session when the unit or role changes. Agreement across independent sessions is useful evidence, not proof. Model selection belongs to the active runtime's role configuration, not the routed skill.
+Pass concise file pointers and explicit worktree or output paths. Review every artifact and run parent verification. Use a fresh session when the unit or role changes. Agreement across independent sessions is useful evidence, not proof. Model roles and execution roles are independent. Resolve model policy from `$PSTACK_CONFIG` or `.pstack/config.md`, never persistent agent defaults.
+
+On Pi, use `pstack_launch` for the playbook's model role. Use `judgment and prose` for advisory synthesis and review not owned by a more specific model role. Use `hardest tasks` for the hardest coupled unit. Select execution roles separately. Use `pstack_panel` for configured panels, with `worktree: true` for writers. Start an owner with the active playbook's model role and execution role `owner`; continue its latest completed run with `pstack_followup`. Call `pstack_status` before accepting results. If the router or configuration is absent, report the gap rather than silently using agent defaults.
 
 ## Writing the reply
 

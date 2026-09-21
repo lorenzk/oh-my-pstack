@@ -8,9 +8,9 @@ the Agent Skills layout.
 
 `oh-my-pstack` is a universal port of the original
 [Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack). It keeps the
-upstream workflow catalog, playbooks, principles, references, and verification
-scripts while replacing Cursor-only runtime assumptions with a host-neutral
-adapter.
+portable catalog from its pinned upstream baseline, including playbooks,
+principles, references, and verification scripts. It replaces Cursor-only
+runtime assumptions with a host-neutral adapter.
 
 ## What is included
 
@@ -20,9 +20,11 @@ adapter.
 - `make-bot-ui` for connecting a local UI to an available webhook automation.
 - `pstack-pi` for translating roles, delegation, models, transcripts, questions,
   and long-running work to the active host.
+- A Pi extension that resolves model roles and delegates each route through
+  `pi-subagents`.
 - Native package metadata for OMP/Pi, Claude Code, and Codex, plus OpenCode setup
   guidance.
-- Daily upstream synchronization that opens a verified pull request.
+- Daily upstream checks that open a verified pull request only when portability gates pass.
 
 The original Cursor repository is the content authority. The dsebban repository
 was used only as an early structural example; it is not an upstream source.
@@ -37,6 +39,18 @@ Install the public GitHub package:
 pi install https://github.com/shrimpwtf/oh-my-pstack
 ```
 
+For an adapted local branch, install the checkout instead:
+
+```bash
+pi install /absolute/path/to/oh-my-pstack
+```
+
+This registers the extension and bundled agents as well as skills. Copying only
+`SKILL.md` files is insufficient. Remove or relocate older duplicate skill copies
+after backing them up; they can shadow the package's updated skills. A local-path
+install follows that directory's checked-out branch. Keep a separate checkout if
+you need to switch branches without changing your active Pi package.
+
 Start Pi in your project:
 
 ```bash
@@ -48,16 +62,22 @@ installed Git packages, or `pi remove https://github.com/shrimpwtf/oh-my-pstack`
 to remove it. Pi packages run with full system access; review the source before
 installing and keep the package pinned or update it deliberately.
 
-For parallel workers and per-role model assignments, install Pi's delegation
-extension too:
+Install `pi-subagents` version 0.57.0 or later:
 
 ```bash
 pi install npm:pi-subagents
 ```
 
-Restart Pi and run `/subagents-doctor`. The extension provides the `subagent` tool
-and built-in `scout`, `researcher`, `worker`, `reviewer`, `oracle`, and `delegate`
-agents. It is separate from pstack because native Pi does not include subagents.
+Restart Pi. Run `/subagents-doctor`, configure the project with `setup-pstack`,
+then run `/pstack-doctor`. The delegation
+extension provides the `subagent` tool and the built-in execution agents.
+
+The pstack package provides `pstack_launch`, `pstack_panel`, `pstack_followup`, and `pstack_status`.
+These tools read the model policy and pass explicit models to `pi-subagents`.
+The model role remains the public run identity. The private runtime profile supplies the required tool set.
+Web researchers require `pi-web-access`. MCP-backed investigations explicitly pass
+`mcp: true` and require a loaded MCP adapter; ordinary Git and web work does not
+require MCP. Read-only profiles include shell access and are not OS sandboxes.
 
 ### OMP
 
@@ -104,8 +124,9 @@ cp -R .pstack-source/skills/. .opencode/skills/
 ```
 
 OpenCode already provides primary and subagents. Configure their models through
-your normal `opencode.json` or `opencode.jsonc` settings, then ask `setup-pstack`
-to map pstack roles to the agents your OpenCode installation exposes.
+your normal `opencode.json` or `opencode.jsonc` settings. Use `setup-pstack` to
+write the separate pstack model-role policy. The skill does not change OpenCode
+agent mappings.
 
 ### Claude Code and Codex
 
@@ -133,19 +154,46 @@ Run the setup skill once:
 $setup-pstack
 ```
 
-It detects the roles and models your host actually exposes, asks for a reasoning
-budget, and lets you choose the defaults for implementation and review work when
-the host supports per-child model selection. Budget choices are unlimited, large, medium, and small. They preserve current
-efforts or target xhigh, high, and medium reasoning, respectively. Existing role choices stay in place unless you change them. The adapter
-applies only reasoning levels or model variants that the host actually supports. On a task-capable host, it writes concrete
-`provider/model-id` assignments to `.pstack/config.md` (or to `$PSTACK_CONFIG`
-when set). Native Pi can list and switch the single active model, but it does not
-include subagents. Install `pi-subagents`, restart Pi, and run
-`/subagents-doctor` before setup if you want role assignments. Setup then writes
-the pstack role map and Pi's `subagents.agentOverrides` with concrete model IDs.
-Without the extension, setup reports the limitation instead of pretending that
-role assignments are active. Switch Pi's single active model with `/model` or
-`pi --model provider/model-id`.
+Setup preserves your reasoning budget: unlimited keeps current efforts; large,
+medium, and small target supported xhigh, high, and medium levels. Model families
+and panel membership stay unchanged unless you choose otherwise.
+
+It detects the models that your host exposes and verifies per-child model
+selection. It then configures every original pstack model role. On Pi, choices
+use `provider/model-id:thinking` and live in `.pstack/config.md` or
+`$PSTACK_CONFIG`. Setup does not change host agent settings.
+
+Native Pi does not include subagents. Install `pi-subagents`, restart Pi, and run
+`/subagents-doctor` before setup and `/pstack-doctor` after writing the policy. Each pstack workflow calls `pstack_launch` or
+`pstack_panel`. Owner workflows call `pstack_followup` after terminal reports.
+The router performs these operations:
+
+1. Read `$PSTACK_CONFIG` or `.pstack/config.md`.
+2. Resolve the exact pstack model role.
+3. Validate the model against the live Pi inventory.
+4. Inject the workflow name and role prompt into the child brief.
+5. Select a private runtime profile for the execution role.
+6. Let `pi-subagents` verify the strict tool list before the first model turn.
+7. Label each visible run with the pstack model role.
+8. Launch or continue through the structured `pi-subagents` RPC bridge.
+9. Store the requested and observed route in the session ledger.
+10. Expose the validated result through `pstack_status`.
+
+Treat the direct `pi-subagents` completion as provisional. After the wait, call
+`pstack_status`. Accept the result only when success is true and both failure
+lists are empty.
+
+Use `/pstack-routes` to inspect the latest ledger entries. Add `[fast]` after a
+supported explicit model to request native Pi fast mode:
+
+```text
+how explorer: openai-codex/gpt-5.6-luna:xhigh [fast]
+```
+
+The router removes `[fast]` from the model identifier. It sends `fast: true` as a
+separate launch field. The router rejects unsupported fast-mode models. The
+provider account can still reject priority service. The ledger records that child
+failure.
 
 Then route your first real task through the main workflow:
 
@@ -188,21 +236,25 @@ silently overwrites them.
 ## Development and verification
 
 ```bash
+npm install
+npm test
 npm run verify
+npm run typecheck
 npm run test:sync
 bun install --cwd skills/poteto-mode/scripts --frozen-lockfile
 bun test orch watch-pr
 bunx tsc --project skills/poteto-mode/scripts/watch-pr/tsconfig.json --noEmit --strict
 ```
 
-`npm run verify` checks skill inventory, frontmatter, local references, manifests,
-the upstream lock, and forbidden vendor-specific runtime bindings.
+`npm run verify` checks the skill inventory, references, manifests, model routes,
+the extension types, and the protected upstream boundary.
 
 ## Host contract
 
 Read `skills/pstack-pi/references/runtime.md` before adapting a workflow to a new
-agent host. It defines canonical roles, capability mapping, configuration paths,
-transcript handling, interaction fallbacks, and verification ownership.
+agent host. It separates pstack model roles from execution roles. It also defines
+capability mapping, configuration paths, transcript handling, interaction
+fallbacks, and verification ownership.
 
 ## License and attribution
 

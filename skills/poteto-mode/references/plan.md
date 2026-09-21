@@ -70,7 +70,7 @@ Order phases so infrastructure and shared types land first (the **foundational-t
 
 For changes touching existing code, apply the **redesign-from-first-principles** principle skill: if we'd built this with the new requirement on day one, what would it look like? Redesign holistically. Deliver incrementally.
 
-If a phase creates or edits a skill, the phase instructs the implementer to use the installed **writing-for-agents** guidance.
+If a phase creates or edits a skill, instruct the implementer to use the host's installed skill-authoring facility, or this package's `SKILL.md` conventions when none is available.
 
 ## 5. Verification per phase
 

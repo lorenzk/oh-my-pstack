@@ -4,6 +4,7 @@
   "path": "pstack",
   "commit": "6ed0f7a9504f577d7529064103cecce9be7dfc5e",
   "protectedPrefixes": [
+    "extensions/pstack-router/",
     "skills/poteto-mode/",
     "skills/pstack-pi/",
     "skills/orchestrate-omp/"
