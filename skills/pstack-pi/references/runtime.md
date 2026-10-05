@@ -30,7 +30,7 @@ Never convert pstack model roles into a small set of host agent model defaults. 
 | `researcher` | Source-verified external documentation and API research. |
 | `synthesizer` | Adjudicate frozen reports without changing their evidence. |
 | `implementer` | Bounded implementation or test changes with explicit ownership. |
-| `owner` | One coupled implementation session retained through its lifecycle. |
+| `owner` | One coupled implementation unit; fresh rounds unless costly live state requires retention. |
 | `mechanical` | Fully specified low-judgment edits. |
 
 Map execution roles to host capability profiles. Profile selection does not select a model.
@@ -73,7 +73,7 @@ For another host, use the exact model value accepted by its child facility.
 
 Resolve the exact model role named by the active workflow. Do not substitute an execution role name as the configuration key.
 
-On Pi, call `pstack_launch` for one child. Call `pstack_panel` for all configured entries in one panel role. Call `pstack_followup` to continue a completed owner. Call `pstack_status` after the wait.
+On Pi, call `pstack_launch` for one child. Call `pstack_panel` for all configured entries in one panel role. Call `pstack_followup` to continue a completed owner only when the next round strictly needs costly live state in that session. Otherwise call `pstack_launch` with the consolidated brief, prior report, and exact branch. Call `pstack_status` after the wait.
 
 The deterministic router validates the complete configuration against the live model inventory. It maps the execution role to a private profile separately.
 

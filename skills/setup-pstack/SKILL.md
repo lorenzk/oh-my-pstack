@@ -43,6 +43,8 @@ Expand the two shared upstream labels exactly:
 
 Do not derive model choices from host agent names such as `scout`, `worker`, `reviewer`, or `oracle`.
 
+Drop retired role lines, such as `how critics`, and their separate reasoning entries from the proposed policy. List every dropped line when asking the user to confirm. Do not drop a supported role or change a configured model just because upstream changed its defaults.
+
 ## 3. Confirm the reasoning budget and every model role
 
 Preserve the existing `# budget` comment, model families, panel membership, and
@@ -106,11 +108,11 @@ why investigators: <explorer-model>
 why synthesizer: <judgment-model>
 reflect tooling: <instruction-model>
 reflect judgment, divergent, synthesizer: <judgment-model>
-arena runners: <judgment-model>, <instruction-model>, <explorer-model>, <strongest-model>
-arena cross-judge pool: <judgment-model>, <instruction-model>, <explorer-model>, <strongest-model>
+arena runners: <judgment-model>, <instruction-model>, <explorer-model>
+arena cross-judge pool: <judgment-model>, <instruction-model>, <explorer-model>
 swarm workers: <code-model>, <alternate-model>
-architect runners: <judgment-model>, <instruction-model>, <explorer-model>, <strongest-model>
-interrogate reviewers: <judgment-model>, <instruction-model>, <explorer-model>, <strongest-model>
+architect runners: <judgment-model>, <instruction-model>, <explorer-model>
+interrogate reviewers: <judgment-model>, <instruction-model>, <explorer-model>
 ```
 
 Replace every placeholder with a confirmed concrete choice. For Pi, valid values resemble `openai-codex/gpt-5.6-sol:max` and `openai-codex/gpt-5.6-luna:xhigh [fast]`.

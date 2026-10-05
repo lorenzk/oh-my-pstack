@@ -40,6 +40,8 @@ export function normalizeContent(source) {
     .replaceAll("claude-fable-5-1-thinking-max", "host-configured role/model")
     .replaceAll("gpt-5.6-sol-max", "host-configured role/model")
     .replaceAll("grok-4.6-fast-xhigh", "host-configured role/model")
+    .replaceAll("grok-4.7-xhigh-fast", "host-configured role/model")
+    .replaceAll("claude-opus-5-5-max", "host-configured role/model")
     .replaceAll("claude-opus-5-thinking-xhigh", "host-configured role/model")
     .replaceAll(/\bTask (?:subagent|tool)\b/g, "host task runner");
 }

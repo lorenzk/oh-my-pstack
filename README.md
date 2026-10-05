@@ -14,7 +14,9 @@ runtime assumptions with a host-neutral adapter.
 
 ## What is included
 
-- 47 upstream pstack skills and their supporting references.
+- 51 upstream pstack skills and their supporting references (baseline 0.15.10).
+- `poteto-help` for setup and workflow guidance, `correct` for recurring agent mistakes,
+  and benchmark validation through `benchmark-checklist` and `principle-explain-the-number`.
 - Benny's three fail-closed issue-triage/reproduction skills.
 - `poteto-mode` for routing work through the right playbook.
 - `make-bot-ui` for connecting a local UI to an available webhook automation.
@@ -165,7 +167,9 @@ use `provider/model-id:thinking` and live in `.pstack/config.md` or
 
 Native Pi does not include subagents. Install `pi-subagents`, restart Pi, and run
 `/subagents-doctor` before setup and `/pstack-doctor` after writing the policy. Each pstack workflow calls `pstack_launch` or
-`pstack_panel`. Owner workflows call `pstack_followup` after terminal reports.
+`pstack_panel`. Owner workflows start fresh rounds by default. Use
+`pstack_followup` only when the next round strictly needs costly live state in
+that owner, such as uncommitted work or a running process.
 The router performs these operations:
 
 1. Read `$PSTACK_CONFIG` or `.pstack/config.md`.
@@ -229,6 +233,18 @@ npm run sync:check
 npm run sync:apply -- --dry-run
 npm run sync:apply
 ```
+
+For a reviewed local refresh, sparse-check out the authoritative source:
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/cursor/plugins.git vendor/cursor-plugins
+git -C vendor/cursor-plugins sparse-checkout set pstack
+npm run sync:check -- --source vendor/cursor-plugins
+```
+
+The vendor checkout is ignored and excluded from the package. Compare it with
+`upstream.lock.json` before advancing the pin. See
+[the 0.15.10 refresh analysis](docs/upstream-refresh-0.15.10.md) for the current merge decisions.
 
 Protected adaptation changes require a human merge decision. The updater never
 silently overwrites them.

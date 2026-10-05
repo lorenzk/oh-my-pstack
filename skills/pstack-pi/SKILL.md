@@ -167,6 +167,8 @@ Do not mix writers, reviewers, or synthesizers in one child session. Do not let 
 
 ### Long-lived owner
 
+Use this protocol only when the next round strictly needs costly live state in the owner, such as its checkout, uncommitted changes, or a running process. Use a fresh `pstack_launch` with a consolidated brief for ordinary fix rounds, retries, follow-ups, and queue items. An owner role can outlive its agent.
+
 1. Resolve the model role once.
 2. Call `pstack_launch` once with the `owner` execution role and complete brief.
 3. Record its run ID.

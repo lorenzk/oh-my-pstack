@@ -7,6 +7,8 @@ export const forbiddenRuntimeBindings = [
   "claude-fable-5-1-thinking-max",
   "gpt-5.6-sol-max",
   "grok-4.6-fast-xhigh",
+  "grok-4.7-xhigh-fast",
+  "claude-opus-5-5-max",
   "claude-opus-5-thinking-xhigh",
   "update_state",
   "SendToUser",
