@@ -2,254 +2,64 @@
 
 <img src="assets/logo.png" alt="pstack logo" width="128">
 
-Portable, rigorous engineering workflows for [OMP](https://omp.sh/), Pi,
-[OpenCode](https://opencode.ai/), Claude Code, Codex, and other hosts that support
-the Agent Skills layout.
+**This is [lorenzk's fork](https://github.com/lorenzk/oh-my-pstack) of
+[shrimpwtf/oh-my-pstack](https://github.com/shrimpwtf/oh-my-pstack), which is a
+portable adaptation of Lauren Tan's original
+[Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack).**
 
-`oh-my-pstack` is a universal port of the original
-[Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack). It keeps the
-portable catalog from its pinned upstream baseline, including playbooks,
-principles, references, and verification scripts. It replaces Cursor-only
-runtime assumptions with a host-neutral adapter.
+**This fork is optimized for working with Pi, not other agent hosts.**
+Other-host support is inherited from upstream and is not this fork's focus.
 
-## What is included
+For the general workflow overview, see
+[the upstream README](https://github.com/shrimpwtf/oh-my-pstack#readme).
+This README focuses on what has changed in this fork.
 
-- 51 upstream pstack skills and their supporting references (baseline 0.15.10).
-- `poteto-help` for setup and workflow guidance, `correct` for recurring agent mistakes,
-  and benchmark validation through `benchmark-checklist` and `principle-explain-the-number`.
-- Benny's three fail-closed issue-triage/reproduction skills.
-- `poteto-mode` for routing work through the right playbook.
-- `make-bot-ui` for connecting a local UI to an available webhook automation.
-- `pstack-pi` for translating roles, delegation, models, transcripts, questions,
-  and long-running work to the active host.
-- A Pi extension that resolves model roles and delegates each route through
-  `pi-subagents`.
-- Native package metadata for OMP/Pi, Claude Code, and Codex, plus OpenCode setup
-  guidance.
-- Daily upstream checks that open a verified pull request only when portability gates pass.
+## Changes compared with shrimpwtf/oh-my-pstack
 
-The original Cursor repository is the content authority. The dsebban repository
-was used only as an early structural example; it is not an upstream source.
+- **Refreshed pstack to 0.15.10**, via 0.15.2, while preserving portable-host
+  adaptations. Includes the revised how/why workflows, `poteto-help`, `correct`,
+  `make-bot-ui`, benchmark guidance, and updated playbooks and principles.
+- **Integrated and extended deterministic Pi routing from
+  [upstream PR #1](https://github.com/shrimpwtf/oh-my-pstack/pull/1)**
+  (Gabriel Aguiar's work). The router resolves configured model roles, launches
+  through `pi-subagents`, and records requested versus observed routes in a
+  validated session ledger. Adds `pstack_launch`, `pstack_panel`,
+  `pstack_followup`, `pstack_status`, `/pstack-doctor`, and `/pstack-routes`.
+- **Tightened Pi execution and setup:** separate read, web-evidence, and
+  MCP-evidence profiles; explicit MCP opt-in; isolated writer/researcher panels;
+  reasoning-budget preservation; explicit fast-mode handling; completion
+  reconciliation after reload/resume; and corrected structured RPC calls.
+  Clarified sibling-skill path resolution on Pi.
+- **Hardened upstream syncing:** protect all adapted paths, reject dirty sources
+  and managed-file drift, read immutable Git snapshots, and avoid deleting
+  local-only skills. Preserve these safeguards when integrating upstream fixes.
+- **Expanded verification** with routing, extension, portability, refresh, and
+  sync regression tests, strict TypeScript checks, and a Pi registration probe.
 
-## Install
+Details: [Pi routing adaptation](docs/pi-routing-adaptation.md),
+[0.15.2 refresh](docs/upstream-refresh-2026-09.md), and
+[0.15.10 refresh](docs/upstream-refresh-0.15.10.md).
 
-### Pi
-
-Install the public GitHub package:
+## Install this fork on Pi
 
 ```bash
-pi install https://github.com/shrimpwtf/oh-my-pstack
+pi install https://github.com/lorenzk/oh-my-pstack
+pi install npm:pi-subagents
 ```
 
-For an adapted local branch, install the checkout instead:
+Requires `pi-subagents` 0.57.0 or later. Restart Pi, run `/subagents-doctor`,
+configure your project with `setup-pstack`, then run `/pstack-doctor`.
+Install the whole package, not just copied skill files; older duplicate skills
+can shadow it. Web research also requires `pi-web-access`; MCP-backed work
+requires a loaded MCP adapter.
+
+For a local checkout:
 
 ```bash
 pi install /absolute/path/to/oh-my-pstack
 ```
 
-This registers the extension and bundled agents as well as skills. Copying only
-`SKILL.md` files is insufficient. Remove or relocate older duplicate skill copies
-after backing them up; they can shadow the package's updated skills. A local-path
-install follows that directory's checked-out branch. Keep a separate checkout if
-you need to switch branches without changing your active Pi package.
-
-Start Pi in your project:
-
-```bash
-pi
-```
-
-Use `pi list` to confirm the package. Use `pi update --extensions` to reconcile
-installed Git packages, or `pi remove https://github.com/shrimpwtf/oh-my-pstack`
-to remove it. Pi packages run with full system access; review the source before
-installing and keep the package pinned or update it deliberately.
-
-Install `pi-subagents` version 0.57.0 or later:
-
-```bash
-pi install npm:pi-subagents
-```
-
-Restart Pi. Run `/subagents-doctor`, configure the project with `setup-pstack`,
-then run `/pstack-doctor`. The delegation
-extension provides the `subagent` tool and the built-in execution agents.
-
-The pstack package provides `pstack_launch`, `pstack_panel`, `pstack_followup`, and `pstack_status`.
-These tools read the model policy and pass explicit models to `pi-subagents`.
-The model role remains the public run identity. The private runtime profile supplies the required tool set.
-Web researchers require `pi-web-access`. MCP-backed investigations explicitly pass
-`mcp: true` and require a loaded MCP adapter; ordinary Git and web work does not
-require MCP. Read-only profiles include shell access and are not OS sandboxes.
-
-### OMP
-
-Install from GitHub:
-
-```bash
-omp install https://github.com/shrimpwtf/oh-my-pstack
-```
-
-For local development, load the checkout directly:
-
-```bash
-omp --plugin-dir /path/to/oh-my-pstack
-```
-
-### OpenCode
-
-OpenCode natively loads Agent Skills from `.opencode/skills/` in a project or
-`~/.config/opencode/skills/` globally. Install the repository and copy its skills
-into one of those discovery directories:
-
-```bash
-git clone https://github.com/shrimpwtf/oh-my-pstack.git \
-  ~/.local/share/oh-my-pstack
-mkdir -p ~/.config/opencode/skills
-cp -R ~/.local/share/oh-my-pstack/skills/. ~/.config/opencode/skills/
-```
-
-Start OpenCode in your project. The skills appear through OpenCode's native
-`skill` tool; ask it to load `setup-pstack` or `poteto-mode` by name. To update,
-pull the repository and repeat the copy step:
-
-```bash
-git -C ~/.local/share/oh-my-pstack pull --ff-only
-cp -R ~/.local/share/oh-my-pstack/skills/. ~/.config/opencode/skills/
-```
-
-For project-local installation, use `.opencode/skills/` instead:
-
-```bash
-git clone https://github.com/shrimpwtf/oh-my-pstack.git .pstack-source
-mkdir -p .opencode/skills
-cp -R .pstack-source/skills/. .opencode/skills/
-```
-
-OpenCode already provides primary and subagents. Configure their models through
-your normal `opencode.json` or `opencode.jsonc` settings. Use `setup-pstack` to
-write the separate pstack model-role policy. The skill does not change OpenCode
-agent mappings.
-
-### Claude Code and Codex
-
-Clone or download the repository, then add it through the host's local plugin
-workflow. Claude Code reads `.claude-plugin/plugin.json`; Codex reads
-`.codex-plugin/plugin.json`. If plugin installation is unavailable, point the
-host's Agent Skills configuration at the repository's `skills/` directory.
-
-## Quick start
-
-Start substantial work with `poteto-mode`. Use `pstack-pi` when a workflow needs
-delegation or host-specific lifecycle behavior.
-
-All hosts share the same skill content. The runtime adapter maps canonical pstack
-roles to the capabilities actually exposed by the host. Missing integrations are
-reported honestly and fail closed; for example, Benny requires an available
-Slack/tracker/control adapter rather than pretending those tools exist.
-
-## First-time setup
-
-After installing, start a fresh agent session in the project you want to work on.
-Run the setup skill once:
-
-```text
-$setup-pstack
-```
-
-Setup preserves your reasoning budget: unlimited keeps current efforts; large,
-medium, and small target supported xhigh, high, and medium levels. Model families
-and panel membership stay unchanged unless you choose otherwise.
-
-It detects the models that your host exposes and verifies per-child model
-selection. It then configures every original pstack model role. On Pi, choices
-use `provider/model-id:thinking` and live in `.pstack/config.md` or
-`$PSTACK_CONFIG`. Setup does not change host agent settings.
-
-Native Pi does not include subagents. Install `pi-subagents`, restart Pi, and run
-`/subagents-doctor` before setup and `/pstack-doctor` after writing the policy. Each pstack workflow calls `pstack_launch` or
-`pstack_panel`. Owner workflows start fresh rounds by default. Use
-`pstack_followup` only when the next round strictly needs costly live state in
-that owner, such as uncommitted work or a running process.
-The router performs these operations:
-
-1. Read `$PSTACK_CONFIG` or `.pstack/config.md`.
-2. Resolve the exact pstack model role.
-3. Validate the model against the live Pi inventory.
-4. Inject the workflow name and role prompt into the child brief.
-5. Select a private runtime profile for the execution role.
-6. Let `pi-subagents` verify the strict tool list before the first model turn.
-7. Label each visible run with the pstack model role.
-8. Launch or continue through the structured `pi-subagents` RPC bridge.
-9. Store the requested and observed route in the session ledger.
-10. Expose the validated result through `pstack_status`.
-
-Treat the direct `pi-subagents` completion as provisional. After the wait, call
-`pstack_status`. Accept the result only when success is true and both failure
-lists are empty.
-
-Use `/pstack-routes` to inspect the latest ledger entries. Add `[fast]` after a
-supported explicit model to request native Pi fast mode:
-
-```text
-how explorer: openai-codex/gpt-5.6-luna:xhigh [fast]
-```
-
-The router removes `[fast]` from the model identifier. It sends `fast: true` as a
-separate launch field. The router rejects unsupported fast-mode models. The
-provider account can still reject priority service. The ledger records that child
-failure.
-
-Then route your first real task through the main workflow:
-
-```text
-$poteto-mode add a small feature and prove it works end to end
-```
-
-The setup skill may offer to create a project verification skill when the project
-has no existing way to exercise the real application. Accept that offer when you
-want repeatable behavioral proof; otherwise setup finishes without changing the
-project. Read `skills/setup-pstack/SKILL.md` for the complete setup contract.
-
-## Automatic upstream updates
-
-`.github/workflows/upstream-sync.yml` checks the original pstack `main` branch
-every day at 04:17 UTC and can also be started manually. The pinned baseline lives
-in `upstream.lock.json`.
-
-The updater:
-
-1. Fetches the latest upstream revision.
-2. Normalizes known Cursor runtime bindings for portable hosts.
-3. Updates only upstream-owned files.
-4. Preserves OMP adapters and protected portability adaptations.
-5. Stops before writing if an adapted file changed upstream.
-6. Runs verification, updater tests, Bun tests, and strict TypeScript checking.
-7. Opens a pull request only after those checks pass.
-
-Run it locally:
-
-```bash
-npm run sync:check
-npm run sync:apply -- --dry-run
-npm run sync:apply
-```
-
-For a reviewed local refresh, sparse-check out the authoritative source:
-
-```bash
-git clone --filter=blob:none --sparse https://github.com/cursor/plugins.git vendor/cursor-plugins
-git -C vendor/cursor-plugins sparse-checkout set pstack
-npm run sync:check -- --source vendor/cursor-plugins
-```
-
-The vendor checkout is ignored and excluded from the package. Compare it with
-`upstream.lock.json` before advancing the pin. See
-[the 0.15.10 refresh analysis](docs/upstream-refresh-0.15.10.md) for the current merge decisions.
-
-Protected adaptation changes require a human merge decision. The updater never
-silently overwrites them.
-
-## Development and verification
+## Development
 
 ```bash
 npm install
@@ -257,24 +67,14 @@ npm test
 npm run verify
 npm run typecheck
 npm run test:sync
-bun install --cwd skills/poteto-mode/scripts --frozen-lockfile
-bun test orch watch-pr
-bunx tsc --project skills/poteto-mode/scripts/watch-pr/tsconfig.json --noEmit --strict
 ```
 
-`npm run verify` checks the skill inventory, references, manifests, model routes,
-the extension types, and the protected upstream boundary.
-
-## Host contract
-
-Read `skills/pstack-pi/references/runtime.md` before adapting a workflow to a new
-agent host. It separates pstack model roles from execution roles. It also defines
-capability mapping, configuration paths, transcript handling, interaction
-fallbacks, and verification ownership.
+The original Cursor repository remains the content authority, pinned in
+`upstream.lock.json`. Protected adaptations require a human merge decision;
+the updater never silently overwrites them.
 
 ## License and attribution
 
-MIT. See `LICENSE` and `THIRD_PARTY_NOTICES.md`.
-
-The pstack-derived material is adapted from Lauren Tan's original work in
-`cursor/plugins`. See `THIRD_PARTY_NOTICES.md` for attribution and license text.
+MIT. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Credit to Lauren Tan for the original pstack, shrimpwtf for the portable
+adaptation, and Gabriel Aguiar for the deterministic Pi router integrated here.
