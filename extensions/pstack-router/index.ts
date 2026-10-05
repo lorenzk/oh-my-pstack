@@ -780,7 +780,7 @@ export default function pstackRouter(pi: ExtensionAPI): void {
       if (!childRunId) throw new PstackConfigError(`Pstack route '${params.runId}' has no retained child identity.`);
       onUpdate?.({ content: [{ type: "text", text: `Continue owner model role ${source.modelRole}.` }], details: {} });
       const response = await rpcCall(pi, "spawn", {
-        workflowScript: buildFollowupWorkflowScript({
+        script: buildFollowupWorkflowScript({
           modelRole: source.modelRole,
           childRunId,
           task: params.task,
@@ -827,7 +827,7 @@ export default function pstackRouter(pi: ExtensionAPI): void {
       const model = route.models[number - 1];
       if (!model) throw new PstackConfigError(`Model role '${route.modelRole}' has no choice ${number}.`);
       const response = await rpcCall(pi, "spawn", {
-        workflowScript: buildScalarWorkflowScript({
+        script: buildScalarWorkflowScript({
           modelRole: route.modelRole,
           executionRole: route.executionRole,
           agent: route.agent,
@@ -870,7 +870,7 @@ export default function pstackRouter(pi: ExtensionAPI): void {
       if (!isPanelModelRole(route.modelRole)) {
         throw new PstackConfigError(`Model role '${route.modelRole}' is scalar. Use pstack_launch.`);
       }
-      const workflowScript = buildPanelWorkflowScript({
+      const script = buildPanelWorkflowScript({
         modelRole: route.modelRole,
         executionRole: route.executionRole,
         agent: route.agent,
@@ -879,7 +879,7 @@ export default function pstackRouter(pi: ExtensionAPI): void {
         worktree: params.worktree ?? false,
       });
       const response = await rpcCall(pi, "spawn", {
-        workflowScript,
+        script,
         context: route.context,
         cwd: route.cwd,
         async: true,

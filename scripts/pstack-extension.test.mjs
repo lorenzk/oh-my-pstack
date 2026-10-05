@@ -5,6 +5,10 @@ import { join } from "node:path";
 import test from "node:test";
 import pstackRouter from "../extensions/pstack-router/index.ts";
 
+const rpcBridge = process.env.PSTACK_SUBAGENTS_RPC_MODULE
+  ? await import(process.env.PSTACK_SUBAGENTS_RPC_MODULE)
+  : undefined;
+
 function createHost(runId = "pstack-run-1", spawnError, followupRunId = `${runId}-followup`, statusReply) {
   const eventHandlers = new Map();
   const extensionHandlers = new Map();
@@ -50,7 +54,25 @@ function createHost(runId = "pstack-run-1", spawnError, followupRunId = `${runId
     },
   };
 
-  events.on("subagents:rpc:v1:request", (request) => {
+  if (rpcBridge) {
+    rpcBridge.registerSubagentRpcBridge({
+      events,
+      getContext: () => context(process.cwd(), []),
+      async execute(_id, params) {
+        if (spawnError) return { isError: true, content: [{ type: "text", text: spawnError.message }] };
+        if (params.action === "status" && statusReply) return { content: [], ...statusReply };
+        return {
+          content: [],
+          details: { runId: params.action === "resume" || params.workflowScript?.includes('"resume"') ? followupRunId : runId },
+        };
+      },
+    });
+  } else events.on("subagents:rpc:v1:request", (request) => {
+    if (request.method === "spawn") {
+      assert.equal(Object.hasOwn(request.params, "workflowScript"), false, "RPC spawn must not send the removed workflowScript parameter");
+      assert.equal(typeof request.params.script, "string");
+      assert.notEqual(request.params.script.trim(), "");
+    }
     if (request.method === "spawn" && spawnError) {
       events.emit(`subagents:rpc:v1:reply:${request.requestId}`, {
         version: 1,
@@ -67,7 +89,7 @@ function createHost(runId = "pstack-run-1", spawnError, followupRunId = `${runId
       data: request.method === "ping"
         ? { version: 1, methods: ["ping", "spawn", "resume"] }
         : request.method === "status" && statusReply ? statusReply
-        : { details: { runId: request.method === "resume" || request.params.workflowScript?.includes('"resume"') ? followupRunId : runId } },
+        : { details: { runId: request.method === "resume" || request.params.script?.includes('"resume"') ? followupRunId : runId } },
     });
   });
 
@@ -99,6 +121,9 @@ function context(cwd, models, sessionId = "session-a", branch = []) {
     sessionManager: {
       getSessionId() {
         return sessionId;
+      },
+      getSessionFile() {
+        return undefined;
       },
       getBranch() {
         return branch;
@@ -150,7 +175,7 @@ test("writer panels reject shared-cwd launch and isolate each child when request
   await assert.rejects(host.tools.get("pstack_panel").execute("unsafe", params, undefined, undefined, ctx), /require worktree: true/);
   assert.equal(spawnRequest(host.requests), undefined);
   const result = await host.tools.get("pstack_panel").execute("safe", { ...params, worktree: true }, undefined, undefined, ctx);
-  const script = spawnRequest(host.requests).params.workflowScript;
+  const script = spawnRequest(host.requests).params.script;
   assert.equal([...script.matchAll(/"worktree":true/g)].length, 2);
   assert.equal(result.details.worktree, true);
 });
@@ -205,14 +230,14 @@ test("pstack_launch resolves model, thinking, fast, agent, and route ledger", as
   const request = spawnRequest(host.requests);
   assert.equal(request.params.agent, undefined);
   assert.equal(request.params.context, "fresh");
-  assert.match(request.params.workflowScript, /runs\.run\("how-explorer"/u);
-  assert.match(request.params.workflowScript, /"label":"how explorer"/u);
-  assert.match(request.params.workflowScript, /"agent":"pstack-runtime-read"/u);
-  assert.match(request.params.workflowScript, /"model":"openai-codex\/gpt-5\.6-luna:xhigh"/u);
-  assert.match(request.params.workflowScript, /"fast":true/u);
-  assert.match(request.params.workflowScript, /"worktree":true/u);
-  assert.match(request.params.workflowScript, /PSTACK WORKFLOW IDENTITY\\nhow explorer/u);
-  assert.match(request.params.workflowScript, /EXECUTION ROLE\\nexplorer/u);
+  assert.match(request.params.script, /runs\.run\("how-explorer"/u);
+  assert.match(request.params.script, /"label":"how explorer"/u);
+  assert.match(request.params.script, /"agent":"pstack-runtime-read"/u);
+  assert.match(request.params.script, /"model":"openai-codex\/gpt-5\.6-luna:xhigh"/u);
+  assert.match(request.params.script, /"fast":true/u);
+  assert.match(request.params.script, /"worktree":true/u);
+  assert.match(request.params.script, /PSTACK WORKFLOW IDENTITY\\nhow explorer/u);
+  assert.match(request.params.script, /EXECUTION ROLE\\nexplorer/u);
   assert.match(result.content[0].text, /Pstack model role: how explorer/u);
   assert.match(result.content[0].text, /Run: pstack-run-1/u);
   assert.doesNotMatch(result.content[0].text, /Pi agent|pstack-runtime-read/u);
@@ -234,9 +259,9 @@ test("pstack_followup continues a completed scalar owner with the same route", a
   }, new AbortController().signal, undefined, ownerContext);
 
   const ownerSpawn = spawnRequest(host.requests);
-  assert.match(ownerSpawn.params.workflowScript, /runs\.run\("feature"/u);
-  assert.match(ownerSpawn.params.workflowScript, /"label":"feature"/u);
-  assert.match(ownerSpawn.params.workflowScript, /"agent":"poteto-agent"/u);
+  assert.match(ownerSpawn.params.script, /runs\.run\("feature"/u);
+  assert.match(ownerSpawn.params.script, /"label":"feature"/u);
+  assert.match(ownerSpawn.params.script, /"agent":"poteto-agent"/u);
 
   host.pi.events.emit("subagent:async-complete", {
     runId: "owner-1",
@@ -265,10 +290,10 @@ test("pstack_followup continues a completed scalar owner with the same route", a
 
   const requests = host.requests.filter((entry) => entry.channel === "subagents:rpc:v1:request" && entry.data.method === "spawn");
   const request = requests.at(-1).data;
-  assert.match(request.params.workflowScript, /runs\.run\("feature"/u);
-  assert.match(request.params.workflowScript, /"resume":"owner-child-1"/u);
-  assert.match(request.params.workflowScript, /"label":"feature"/u);
-  assert.match(request.params.workflowScript, /Apply the accepted review findings\./u);
+  assert.match(request.params.script, /runs\.run\("feature"/u);
+  assert.match(request.params.script, /"resume":"owner-child-1"/u);
+  assert.match(request.params.script, /"label":"feature"/u);
+  assert.match(request.params.script, /Apply the accepted review findings\./u);
   assert.equal(result.details.runId, "owner-2");
   assert.equal(result.details.previousRunId, "owner-1");
   assert.equal(result.details.modelRole, "feature");
@@ -297,10 +322,10 @@ test("pstack_panel launches all configured models through one workflow", async (
 
   const request = spawnRequest(host.requests);
   assert.equal(request.params.context, "fresh");
-  assert.match(request.params.workflowScript, /"agent":"pstack-runtime-read"/u);
-  assert.match(request.params.workflowScript, /"label":"how critics 1\/2"/u);
-  assert.match(request.params.workflowScript, /openai-codex\/gpt-5\.6-sol:medium/u);
-  assert.match(request.params.workflowScript, /anthropic\/claude-opus-5:xhigh/u);
+  assert.match(request.params.script, /"agent":"pstack-runtime-read"/u);
+  assert.match(request.params.script, /"label":"how critics 1\/2"/u);
+  assert.match(request.params.script, /openai-codex\/gpt-5\.6-sol:medium/u);
+  assert.match(request.params.script, /anthropic\/claude-opus-5:xhigh/u);
   assert.equal(host.entries[0].data.choices.length, 2);
 });
 
