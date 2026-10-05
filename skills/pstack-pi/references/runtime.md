@@ -151,7 +151,7 @@ Put observable facts in probes and verification runs. Do not ask the user for fa
 
 ## Skills and paths
 
-Invoke skills through the host-supported skill mechanism. Resolve sibling files under `skills/<name>/` within this package.
+Invoke skills through the host-supported skill mechanism. Resolve sibling files under `skills/<name>/` within this package. For example, `how` lives at `skills/how/SKILL.md`, not `skills/poteto-mode/skills/how/SKILL.md`. On Pi, read `~/.pi/agent/skills/how/SKILL.md`.
 
 OpenCode loads Agent Skills from `.opencode/skills/` in a project or `~/.config/opencode/skills/` globally. Copy this package's `skills/` contents into one of those locations.
 
