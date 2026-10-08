@@ -29,6 +29,23 @@ test("portable skills contain no package-manager or host-specific resource bindi
   }
 });
 
+test("workflow skill links resolve within the package for hidden how and unslop skills", async () => {
+  for (const [path, prefix] of [
+    ["skills/poteto-mode/SKILL.md", ".."],
+    ["skills/pstack-pi/references/runtime.md", "../.."],
+  ]) {
+    const file = new URL(`../${path}`, import.meta.url);
+    const source = await readFile(file, "utf8");
+    for (const name of ["how", "unslop"]) {
+      const target = `${prefix}/${name}/SKILL.md`;
+      assert.ok(source.includes(`](${target})`), `${path} links to ${name}`);
+      const skill = await readFile(new URL(target, file), "utf8");
+      assert.match(skill, new RegExp(`^name: ${name}$`, "mu"));
+      assert.match(skill, /^disable-model-invocation: true$/mu);
+    }
+  }
+});
+
 test("the Pi package exposes valid bundled agents to pi-subagents", async () => {
   const manifest = JSON.parse(await readFile(join(root, "package.json"), "utf8"));
   assert.deepEqual(manifest.pi?.subagents?.agents, ["./agents"]);

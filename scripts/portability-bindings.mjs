@@ -1,5 +1,6 @@
 export const forbiddenRuntimeBindings = [
   ".cursor/",
+  ".pi/agent/skills/",
   "subagent_type:",
   "AskQuestion",
   "environment: \"cloud\"",

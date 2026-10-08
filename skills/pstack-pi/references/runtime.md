@@ -151,7 +151,9 @@ Put observable facts in probes and verification runs. Do not ask the user for fa
 
 ## Skills and paths
 
-Invoke skills through the host-supported skill mechanism. Resolve sibling files under `skills/<name>/` within this package. For example, `how` lives at `skills/how/SKILL.md`, not `skills/poteto-mode/skills/how/SKILL.md`. On Pi, read `~/.pi/agent/skills/how/SKILL.md`.
+Invoke skills through the host-supported skill mechanism. Resolve linked files relative to the containing file's directory. From this file, [how](../../how/SKILL.md) and [unslop](../../unslop/SKILL.md) resolve within this package.
+
+On Pi, package skills stay at their configured package location. Pi does not copy them into the user skill directory. Use the discovered skill path or a package-relative link, never a guessed installation root. Skills with `disable-model-invocation: true` can be absent from the model's skill list. Workflows may still read their linked files.
 
 OpenCode loads Agent Skills from `.opencode/skills/` in a project or `~/.config/opencode/skills/` globally. Copy this package's `skills/` contents into one of those locations.
 
