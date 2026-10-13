@@ -91,6 +91,21 @@ describe("readiness truth table", () => {
 });
 
 describe("snapshot query planning", () => {
+  it("blocks readiness on the 101st review thread even when CI passes", async () => {
+    const resolved = { id: "resolved", firstComment: null, resolved: true };
+    const reader = fakeReader({ threadPages: [
+      { threads: Array.from({ length: 100 }, (_, i) => ({ ...resolved, id: `resolved-${i}` })), endCursor: "next" },
+      { threads: [{ id: "late-blocker", firstComment: null, resolved: false }], endCursor: null },
+    ] });
+    const snapshot = await readSnapshot({
+      reader, context: context(101), pendingHistory: "include", allowDraft: false,
+    });
+    expect(classifyPr(snapshot)).toMatchObject({
+      kind: "blocker", blocker: { kind: "review-threads", threads: [{ id: "late-blocker" }] },
+    });
+    expect(reader.calls).toContain("reviewThreadPage:next");
+  });
+
   it("does not query commit rollups while queued checks are pending", async () => {
     const reader = fakeReader({
       fastPath: { kind: "checks", checks: [pendingCheck()] },
@@ -106,7 +121,7 @@ describe("snapshot query planning", () => {
     expect(snapshot.ci.kind).toBe("ci-pending");
     expect(reader.calls).toEqual([
       "pullRequest",
-      "reviewThreads",
+      "reviewThreadPage:null",
       "checksFastPath",
     ]);
   });

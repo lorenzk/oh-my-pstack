@@ -8,7 +8,7 @@ disable-model-invocation: true
 
 ## Non-negotiables
 
-Resolve linked skill files relative to this file's directory. On Pi, package skills stay at their configured package location. Do not infer a user skill directory from a skill name. Skills with `disable-model-invocation: true` can be absent from the model's skill list. Read their linked files when this workflow requires them.
+Resolve linked skill files relative to this file's directory. On Pi, package skills stay at their configured package location. Do not infer a user skill directory from a skill name. Skills with `disable-model-invocation: true` can be absent from the model's skill list. Read their linked files when this workflow requires them. Bundled skills live at `../<name>/SKILL.md` from this file. Put this file's absolute path in every `poteto-agent` brief.
 
 The Principles section below grounds every trigger. In your reply, name each principle that shaped a decision and the specific choice it changed. Cite only principles whose leaf SKILL.md you read this session.
 
@@ -26,6 +26,7 @@ Remaining triggers:
 - Before commit → the [unslop](../unslop/SKILL.md) skill.
 - Before review → the **no-comments** skill (`/no-comments`).
 - Shipping UI / IDE / CLI → the installed control capability for that surface. Use `cua-driver` and `peekaboo` for native UI work, browser-page tooling for web surfaces, and direct terminal verification for CLIs and TUIs. For bug fixes, reproduce first on the same surface yourself. Hand to the user only under the narrow Bug fix step 1 exception.
+- Running a benchmark, measuring perf, or reporting a measured speedup or regression → the [benchmark-checklist](../benchmark-checklist/SKILL.md) skill before reporting or acting on the number.
 - Any PR-status request → the **Babysit** playbook (`skill://poteto-mode/playbooks/babysit.md`). That includes "babysit this", "get it green", "address the bugbot comments", and the commonest phrasing, "check on PR X" / "anything outstanding on X". Never triggered by merely opening a PR. Declare its mode before polling. The playbook's step 1 owns the request-to-mode mapping.
 - Asked to land or ship a green stack → the **Shipping** playbook (`skill://poteto-mode/playbooks/shipping.md`). Green is not safe. Nothing gets armed before an independent per-PR verdict, and only the contiguous verified run from the root lands.
 - Bugbot or the agentic security review commented → skeptical posture. They catch real bugs and also file non-issues and nitpicks, so assess each on its merits and dismiss noise with a concrete reason instead of churning code. Triage fix / dismiss / ask per `skill://poteto-mode/references/bugbot-triage.md`.
@@ -64,7 +65,6 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 - **Fix Root Causes** (**principle-fix-root-causes**). Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
 - **Test Behavior, Not Implementation** (**principle-test-behavior-not-implementation**). Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
-- **Explain the Number** (**principle-explain-the-number**). Before you trust, report, or act on a number you measured, find what limits it and rule out that it measured something other than the work you think.
 - **Explain the Number** (**principle-explain-the-number**). Before you trust, report, or act on a number you measured (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
 
 **Delegation**
@@ -88,7 +88,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 
 ## Delegation
 
-`poteto-mode` is the sole router. It selects the playbook, step order, canonical role, and lifecycle protocol. The `pstack-pi` adapter translates host mechanics. Never copy a backend's command syntax into a routed skill.
+The chat that receives `poteto-mode` owns the playbook, plan, and every child launch. Never spawn a `poteto-agent` to run the whole mode. `poteto-mode` is the sole router. It selects the playbook, step order, canonical role, and lifecycle protocol. The `pstack-pi` adapter translates host mechanics. Never copy a backend's command syntax into a routed skill.
 
 Use these canonical roles:
 

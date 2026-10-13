@@ -12,6 +12,8 @@ const requiredSkills = new Set([
   "benchmark-checklist",
   "correct",
   "poteto-help",
+  "in-your-own-words",
+  "ketchup",
   "principle-explain-the-number",
   "bro",
   "create-verification-skill",

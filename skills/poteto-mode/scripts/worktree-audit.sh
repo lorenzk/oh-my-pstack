@@ -4,12 +4,26 @@
 # with a suggested bucket. Never deletes anything; deletion stays a
 # human-gated step in the playbook.
 #
-# Usage: worktree-audit.sh [repo-path]   (defaults to the current repo)
+# Usage: worktree-audit.sh [-b|--base <ref>] [repo-path]
+# Without -b, use origin/HEAD, then origin/main, then origin/master.
+# Pass -b when PRs target a branch other than the remote default.
 set -u
+
+base=""
+while [ $# -gt 0 ]; do
+	case "$1" in
+	-b|--base) [ $# -ge 2 ] && [ -n "$2" ] || { echo "error: $1 needs a ref" >&2; exit 2; }; base="$2"; shift 2 ;;
+	-h|--help) printf '%s\n' 'Usage: worktree-audit.sh [-b|--base <ref>] [repo-path]'; exit 0 ;;
+	-*) echo "error: unknown option: $1" >&2; exit 2 ;;
+	*) break ;;
+	esac
+done
+[ $# -le 1 ] || { echo "error: expected at most one repo path" >&2; exit 2; }
 
 repo="${1:-$(git rev-parse --show-toplevel 2>/dev/null)}"
 [ -z "$repo" ] && { echo "not in a git repo; pass a repo path" >&2; exit 1; }
 cd "$repo" || exit 1
+git rev-parse --git-dir >/dev/null 2>&1 || { echo "error: not a git repo: $repo" >&2; exit 1; }
 
 # Main worktree is the first entry; everything else is a candidate. Strip the
 # record prefix rather than splitting fields so paths containing spaces survive.
@@ -19,8 +33,20 @@ if ! worktree_records=$(git worktree list --porcelain); then
 fi
 main_wt=$(printf '%s\n' "$worktree_records" | awk '/^worktree /{sub(/^worktree /, ""); print; exit}')
 
-# origin/main drives the merge check. Best-effort; stale is fine for a first pass.
-git fetch origin main --quiet 2>/dev/null || echo "warn: could not fetch origin/main; merged column may be stale" >&2
+if [ -z "$base" ]; then
+	for cand in "$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null)" origin/main origin/master; do
+		[ -n "$cand" ] && git rev-parse --verify --quiet "$cand^{commit}" >/dev/null && { base="$cand"; break; }
+	done
+	[ -z "$base" ] && { echo "error: no base ref (origin/HEAD, origin/main, origin/master all missing); pass -b <ref>" >&2; exit 1; }
+	echo "warn: no -b given; MERGED checks against $base" >&2
+fi
+
+# Explicit refspecs also fetch a base absent from a single-branch clone.
+case "$base" in
+origin/*) git fetch origin "+refs/heads/${base#origin/}:refs/remotes/$base" --quiet 2>/dev/null \
+	|| echo "warn: could not fetch $base; merged column may be stale" >&2 ;;
+esac
+git rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1 || { echo "error: base ref not found: $base" >&2; exit 1; }
 
 # PR state by branch, fetched once. Empty if gh is unavailable.
 scratch_dir="$HOME/pstack-scratch/worktree-audit"
@@ -32,6 +58,7 @@ gh pr list --author "@me" --state all --limit 1000 \
 
 now=$(date +%s)
 
+echo "# base: $base"
 printf "SIZE\tAGE\tMERGED\tDIRTY\tLOCKED\tINSPECT\tREMOTE\tPR\tBUCKET\tWORKTREE\n"
 
 printf '%s\n' "$worktree_records" | awk '/^worktree /{sub(/^worktree /, ""); print}' | while IFS= read -r wt; do
@@ -43,7 +70,7 @@ printf '%s\n' "$worktree_records" | awk '/^worktree /{sub(/^worktree /, ""); pri
 			for (i = 1; i <= NF; i++) {
 				if ($i ~ /^locked/) {
 					reason = substr($i, 8)
-					print reason == "" ? "yes" : reason
+					print (reason == "" ? "yes" : reason)
 					exit
 				}
 			}
@@ -58,9 +85,9 @@ printf '%s\n' "$worktree_records" | awk '/^worktree /{sub(/^worktree /, ""); pri
 	head_ts=$(git -C "$wt" log -1 --format='%ct' HEAD 2>/dev/null || echo 0)
 	age=$([ "$head_ts" -gt 0 ] 2>/dev/null && echo "$(( (now - head_ts) / 86400 ))d" || echo "?")
 
-	# Squash-merged branches are not ancestors of main, so PR state is the
+	# Squash-merged branches are not ancestors of the base, so PR state is the
 	# real signal; merge-base only catches fast-forward/rebase merges.
-	git merge-base --is-ancestor "$head" origin/main 2>/dev/null && merged=YES || merged=no
+	git merge-base --is-ancestor "$head" "$base" 2>/dev/null && merged=YES || merged=no
 
 	# Distinguish real WIP (tracked edits) from disposable untracked scratch.
 	if ! porcelain=$(git -C "$wt" status --porcelain 2>/dev/null); then

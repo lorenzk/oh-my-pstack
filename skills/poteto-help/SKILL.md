@@ -1,13 +1,14 @@
 ---
 name: poteto-help
-description: Guides users through pstack setup, poteto-mode, and picking a skill, playbook, or principle. Use for /poteto-help or questions about installing, setting up, or using pstack. Not for requests to do work, even ones that name pstack.
+description: Guides users through pstack setup, poteto-mode, and picking a skill, playbook, or principle. Invoke /skill:poteto-help with a question. Not for requests to do work, even ones that name pstack.
+disable-model-invocation: true
 ---
 
 # Poteto help
 
 Answer the question, give one prompt the user can send, and link the file that owns the answer. Do not start a workflow for a help question. A request such as "use pstack to fix this bug" is work, not help; read [poteto-mode](../poteto-mode/SKILL.md) and run it instead.
 
-Read the routed file before quoting it. Installed files own the details when this map disagrees. Give a local file path or its public portable copy under `https://github.com/shrimpwtf/oh-my-pstack/blob/main/`. Upstream Cursor instructions are not Pi instructions.
+Read the routed file before quoting it. Installed files own the details when this map disagrees. Give a local file path or its public Pi copy under `https://github.com/lorenzk/oh-my-pstack/blob/main/`. Upstream Cursor instructions are not Pi instructions.
 
 ## Find the need
 
@@ -21,13 +22,18 @@ Infer it from the message and conversation. If still unclear, ask one focused mu
 
 Check state only when it changes the answer. Read `$PSTACK_CONFIG` if set, otherwise `.pstack/config.md`. Missing policy means Pi delegation is not configured, not that roles silently get defaults. If the project has no app verification skill or harness, mention [create-verification-skill](../create-verification-skill/SKILL.md) for questions about proving behavior.
 
+When missing policy matters to setup, cost, or model choice, offer setup at most once per chat. If the need is also unclear, batch the two independent questions through `ask_user`. Offer:
+
+- Now. Give `/skill:setup-pstack` and answer their question too.
+- Later. Answer their question and explain that Pi delegation remains unconfigured until setup. Do not claim roles run on fallback models.
+
 ## Get set up
 
 Read the [portable README](../../README.md) and [setup-pstack](../setup-pstack/SKILL.md).
 
 On Pi:
 
-1. Install `pi install https://github.com/shrimpwtf/oh-my-pstack` and `pi install npm:pi-subagents`.
+1. Install `pi install https://github.com/lorenzk/oh-my-pstack` and `pi install npm:pi-subagents`.
 2. Restart Pi and run `/subagents-doctor`.
 3. Run `/skill:setup-pstack`, confirm models and budget, then run `/pstack-doctor`.
 4. Start a real task with `/skill:poteto-mode`, a goal, and a check that can pass or fail.
@@ -40,7 +46,7 @@ Pi requires per-child model selection through the router. Missing roles or unava
 
 ## Start a task
 
-[poteto-mode](../poteto-mode/SKILL.md) picks the playbook, tracks its steps, and reads supporting skills as needed. A good prompt states the goal and the done predicate rather than a hand-written skill sequence. "New task" requests a fresh playbook.
+[poteto-mode](../poteto-mode/SKILL.md) picks the playbook, tracks its steps, and reads supporting skills as needed. A good prompt states the goal and the done predicate rather than a hand-written skill sequence. Read [prompting guidance](references/prompting.md) before helping word one. "New task" requests a fresh playbook.
 
 Pi has no Cursor Custom Mode or Option+Enter activation. Explicitly invoke `/skill:poteto-mode` for each new substantial task and after context loss. Use a project instruction if the user wants a standing routing rule. Alt+Enter in Pi queues a follow-up; it does not pin a skill. Native Pi also has no built-in `/loop`, planning mode, or subagents. Installed extensions supply those capabilities; never invent them.
 
@@ -51,10 +57,12 @@ The default is poteto-mode. Name another skill directly when the user asks for a
 | Need | Skill |
 |---|---|
 | Rigorous non-trivial work | [poteto-mode](../poteto-mode/SKILL.md) |
+| Check the agent understood the goal before it starts | [in-your-own-words](../in-your-own-words/SKILL.md) |
 | How code works or where a change belongs | [how](../how/SKILL.md) |
 | Why the code took its shape | [why](../why/SKILL.md) |
 | A plain explanation of a subsystem or change | [teach](../teach/SKILL.md) |
 | Recent context from the user's own work | [recall](../recall/SKILL.md) |
+| Catch up on changes in this chat and pending decisions | [ketchup](../ketchup/SKILL.md) |
 | Breakage outside a small diff | [blast-radius](../blast-radius/SKILL.md) |
 | Types and module shape before implementation | [architect](../architect/SKILL.md) |
 | Several attempts at one brief, then base selection | [arena](../arena/SKILL.md) |
@@ -78,7 +86,7 @@ The default is poteto-mode. Name another skill directly when the user asks for a
 
 Read frontmatter for installed skills not listed here. Principles are `principle-*` leaf skills indexed by poteto-mode. They steer decisions, not model selection.
 
-Close calls: how explains behavior, why investigates motivation, and teach combines them. Arena selects and grafts candidates; swarm aggregates slices or a race. Architect normally implements after design; "with checkpoint" asks it to stop for design review. Recall rebuilds recent context; Session pickup resumes one specific effort. Figure-it-out designs one run; Orchestrate drives a multi-day program.
+Close calls: how explains behavior, why investigates motivation, and teach combines them. Arena selects and grafts candidates; swarm aggregates slices or a race. Architect normally implements after design; "with checkpoint" asks it to stop for design review. Recall rebuilds recent context; ketchup covers this chat since the user's last message; Session pickup resumes one specific effort. Figure-it-out designs one run; Orchestrate drives a multi-day program.
 
 ## Playbooks
 
@@ -99,10 +107,12 @@ For phased plans, [Multi-phase plan](../poteto-mode/playbooks/multi-phase-plan.m
 | Build green was treated as success | Ask for the real flow, stored value, command, or profile. |
 | A child claimed success | Require `pstack_status` success with empty failure lists and parent artifact verification. |
 
+For a run that drifts, [prompting guidance](references/prompting.md) has one-line steers.
+
 ## Make it yours
 
 Automate-me drafts a personal skill from authorized history. Reflect proposes skill changes from a completed run. Correct turns repeated mistakes into architecture, type, lint, or test enforcement. Poteto-mode's authoring and eval playbooks create and test skills. Fix a broken workflow separately from unrelated feature work.
 
 ## Reply
 
-Lead with the answer. Give at most one example prompt, then a source link. Keep it short unless the user requested the map.
+Lead with the answer. Give at most one example prompt, adapted from [recipes](references/recipes.md) when one fits, then a source link. Keep it short unless the user requested the map.

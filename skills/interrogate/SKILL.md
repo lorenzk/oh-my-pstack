@@ -6,98 +6,56 @@ disable-model-invocation: true
 
 # Interrogate
 
-Follow the [portable runtime contract](../pstack-pi/references/runtime.md) for reviewer panels, execution roles, model roles, and questions.
+Follow the [portable runtime contract](../pstack-pi/references/runtime.md) for reviewer panels, model roles, execution roles, and questions.
 
-`interrogate reviewers` is a pstack model role. Each entry selects one reviewer's per-run model. Every reviewer can use the same execution role.
+Spawn one reviewer per configured model to adversarially review code changes. Every model gets the same prompt and rubric. Diversity comes from models, not assigned personas. Deliver a synthesized verdict. Do NOT auto-apply changes.
 
-Spawn one reviewer per configured model to adversarially review code changes. Each model gets the same prompt and rubric. The adversarial signal comes from model diversity, not assigned personas.
+## Step 1, Scope
 
-The deliverable is a synthesized verdict. Do NOT auto-apply changes.
+Use the caller's files or diff. On a feature branch, use `git diff main...HEAD` or the appropriate base. For recent work, gather the relevant files. Package the diff or contents with surrounding context the reviewers need.
 
-## Step 1, Determine Scope
+## Step 2, Intent
 
-Identify what to review from context:
+State intent in one clear paragraph from the user's message, commit messages, PR description if available, and code. If intent is unclear, ask the user before proceeding.
 
-- If the user points at specific files or a diff, use that
-- If on a feature branch, run `git diff main...HEAD` (or the appropriate base branch) for the full changeset
-- If the user's message references recent work, gather the relevant files
+## Step 3, Spawn reviewers
 
-Package the diff (or file contents) plus any surrounding context files the reviewers need to understand the code.
+`interrogate reviewers` is a pstack panel model role. On Pi, call `pstack_panel` with execution role `reviewer` and one read-only task per configured entry. Label Reviewer A, B, and so on to match the count. Missing policy or an unavailable model stops dispatch. The router resolves `inherit-parent` and `auto` to the concrete parent choice.
 
-## Step 2, State the Intent
-
-Before spawning reviewers, state the intent explicitly. Derive this from:
-
-- The user's message
-- Commit messages
-- PR description if one exists
-- The code itself
-
-Write one clear paragraph. If you're unsure about the intent, ask the user before proceeding.
-
-## Step 3, Spawn Reviewers
-
-Resolve the `interrogate reviewers` panel. On Pi, call `pstack_panel` with execution role `reviewer`. Supply one read-only task per configured entry. Extend or shrink the Reviewer A/B/C/D labels to the entry count. If no panel exists, stop the Pi dispatch.
-
-If a configured model is unavailable, stop the Pi dispatch. The deterministic router resolves `inherit-parent` and `auto` to the concrete parent choice.
-
-Read `references/reviewer-prompt.md` and fill in the template with:
-1. The stated intent
-2. The diff or file contents
-3. The review rubric from `references/rubric.md`
-4. The code-quality lens from `references/code-quality-review.md`
-
-The same filled template goes to all reviewers, so every model applies the code-quality lens.
+Fill `references/reviewer-prompt.md` with the intent, diff or contents, `references/rubric.md`, and `references/code-quality-review.md`. Every reviewer receives the same filled template and a standalone scope. Require `pstack_status` success with empty failure lists before accepting each result.
 
 ## Step 4, Synthesize
 
-As results come back, build a unified picture:
+Parse every reviewer's findings. Merge descriptions of the same issue and name which models raised it. Independent agreement from two or more models is highest signal. Read lone-model findings and weigh their evidence. Note explicit disagreements as context for the verdict.
 
-1. **Parse all findings** from the reviewers
-2. **Identify consensus**. Findings raised by 2+ models independently are highest signal.
-3. **Identify lone-model findings**. Still worth reading, but weight accordingly.
-4. **Deduplicate**. Different models may describe the same issue differently. Merge these and note which models raised it.
-5. **Note disagreements**. If one model flags something and another explicitly says the opposite, that's useful context for the verdict.
+## Step 5, Lead judgment
 
-## Step 5, Lead Judgment
+You are a pragmatic senior engineer, not a neutral aggregator. Read `references/lead-judgment.md`. Put every finding in a bucket with the models that raised it and a one-line rationale:
 
-You are the lead reviewer, a pragmatic senior engineer, not a neutral aggregator.
+- **Act on.** Real correctness, security, or maintainability issues given the goals. They would block a PR.
+- **Consider.** Legitimate, but its value may not outweigh the cost now.
+- **Noted.** Valid but not actionable, context-dependent, premature, or low-impact.
+- **Dismissed.** Wrong, nitpicky, or missing context. Give a brief reason.
 
-Read `references/lead-judgment.md` for the full framework.
-
-Categorize every finding using these buckets:
-
-- **Act on**. Real issues affecting correctness, security, or maintainability given the actual goals. These would block a real PR.
-- **Consider**. Legitimate points, but you're not sure they outweigh the cost of addressing them right now. Worth the user's attention.
-- **Noted**. Technically valid but not actionable. Context-dependent, premature optimization, or low-impact given the current stage.
-- **Dismissed**. Wrong, nitpicky, or missing context. Brief explanation why.
-
-For each finding, include:
-- Which model(s) raised it
-- The category (act on / consider / noted / dismissed)
-- A one-line rationale for the categorization
-
-## Output Format
-
-Present the verdict in this structure:
+## Output format
 
 ### Intent
-> [The stated intent paragraph from Step 2]
+> [The paragraph from step 2.]
 
 ### Reviewers
-- Reviewer [label]: [model name], [N findings] (one bullet per reviewer)
+- Reviewer [label]. [Observed model name], [N findings]. One bullet per reviewer.
 
 ### Act On
-[Findings that should be addressed. For each: description, which models raised it, why it matters.]
+[Each finding, models that raised it, and why it matters.]
 
 ### Consider
-[Findings worth thinking about. For each: description, which models raised it, tradeoff involved.]
+[Each finding, models, and tradeoff.]
 
 ### Noted
-[Valid but low-priority. Brief list.]
+[Brief list.]
 
 ### Dismissed
-[Rejected findings with brief rationale.]
+[Each with a reason.]
 
 ### Agreement Map
-[Where did models agree, where did they diverge, and what does the pattern of agreement/disagreement tell us?]
+[Where models agreed or diverged, and what that pattern means.]

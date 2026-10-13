@@ -16,9 +16,11 @@ This README focuses on what has changed in this fork.
 
 ## Changes compared with shrimpwtf/oh-my-pstack
 
-- **Refreshed pstack to 0.15.10**, via 0.15.2, while preserving portable-host
-  adaptations. Includes the revised how/why workflows, `poteto-help`, `correct`,
-  `make-bot-ui`, benchmark guidance, and updated playbooks and principles.
+- **Refreshed original Cursor pstack to 0.15.23**, while preserving Pi and
+  portable-host adaptations. Adds `ketchup`, `in-your-own-words`, and help
+  prompting recipes; imports leaner workflows and principles, stronger app
+  readiness checks, PR review-thread pagination, Markdown fence handling, and
+  configurable worktree audit bases. Existing model policy stays unchanged.
 - **Integrated and extended deterministic Pi routing from
   [upstream PR #1](https://github.com/shrimpwtf/oh-my-pstack/pull/1)**
   (Gabriel Aguiar's work). The router resolves configured model roles, launches
@@ -38,7 +40,8 @@ This README focuses on what has changed in this fork.
 
 Details: [Pi routing adaptation](docs/pi-routing-adaptation.md),
 [0.15.2 refresh](docs/upstream-refresh-2026-09.md), and
-[0.15.10 refresh](docs/upstream-refresh-0.15.10.md).
+[0.15.10 refresh](docs/upstream-refresh-0.15.10.md), and
+[0.15.23 refresh](docs/upstream-refresh-0.15.23.md).
 
 ## Install this fork on Pi
 

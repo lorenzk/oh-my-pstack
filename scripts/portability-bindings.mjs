@@ -10,6 +10,7 @@ export const forbiddenRuntimeBindings = [
   "grok-4.6-fast-xhigh",
   "grok-4.7-xhigh-fast",
   "claude-opus-5-5-max",
+  "claude-opus-5-5-xhigh",
   "claude-opus-5-thinking-xhigh",
   "update_state",
   "SendToUser",
