@@ -1,61 +1,39 @@
 ---
 name: interrogate
-description: "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Multiple LLM reviewers challenge changes from independent angles."
+description: "Use for \"interrogate\", \"adversarial review\", \"multi-model review\", \"challenge this\", \"stress test this code\", \"find blind spots\", or \"tear this apart\". Adversaries try to break a change or design, and only findings proven by a run survive."
 disable-model-invocation: true
 ---
 
 # Interrogate
 
-Follow the [portable runtime contract](../pstack-pi/references/runtime.md) for reviewer panels, model roles, execution roles, and questions.
+Follow the [portable runtime contract](../pstack-pi/references/runtime.md) for model roles, isolated writer panels, and result acceptance.
 
-Spawn one reviewer per configured model to adversarially review code changes. Every model gets the same prompt and rubric. Diversity comes from models, not assigned personas. Deliver a synthesized verdict. Do NOT auto-apply changes.
+Adversaries try to break a change or a design. A finding survives only when a run proves it. Report the findings. Do not apply fixes.
 
-## Step 1, Scope
+## Frame
 
-Use the caller's files or diff. On a feature branch, use `git diff main...HEAD` or the appropriate base. For recent work, gather the relevant files. Package the diff or contents with surrounding context the reviewers need.
+Use the scope the user names. Otherwise review the branch diff from its merge base with the actual base branch, through the working tree, including staged changes and relevant untracked files. State intent with [in-your-own-words](../in-your-own-words/SKILL.md), from the user's message, commits, and PR description. Ask when intent is unclear.
 
-## Step 2, Intent
+Freeze the source head and capture the scoped staged, unstaged, and untracked changes before dispatch. Include deletions, binary changes, and file modes. Do not copy secrets or unrelated local files. Each adversary must test the same snapshot, not just committed HEAD. If the host cannot seed and verify that snapshot in every isolated worktree, stop and report the gap rather than review a different tree.
 
-State intent in one clear paragraph from the user's message, commit messages, PR description if available, and code. If intent is unclear, ask the user before proceeding.
+## Fan out
 
-## Step 3, Spawn reviewers
+Read [arena](../arena/SKILL.md) Phase A steps 3 and 4 and Phase B, substituting the `interrogate reviewers` model role for `arena runners`. On Pi, call `pstack_panel` with execution role `implementer`, `worktree: true`, and one identical task per configured entry. These adversaries write repros, so the read-only `reviewer` profile is not suitable. The model role remains `interrogate reviewers`; execution permissions do not change the configured models, efforts, or fast mode. Missing policy or unavailable models stop dispatch.
 
-`interrogate reviewers` is a pstack panel model role. On Pi, call `pstack_panel` with execution role `reviewer` and one read-only task per configured entry. Label Reviewer A, B, and so on to match the count. Missing policy or an unavailable model stops dispatch. The router resolves `inherit-parent` and `auto` to the concrete parent choice.
+Give every adversary the scope, intent, frozen source head, snapshot artifacts and setup instructions, acceptance criteria, and this brief:
 
-Fill `references/reviewer-prompt.md` with the intent, diff or contents, `references/rubric.md`, and `references/code-quality-review.md`. Every reviewer receives the same filled template and a standalone scope. Require `pstack_status` success with empty failure lists before accepting each result.
+> Break this change. First seed your isolated worktree with the scoped source snapshot and verify it matches before running probes. Prove each finding with a run against the real code, such as a failing test, a repro script, or command output that shows wrong behavior. For a design or plan, run a prototype or probe the current tree. Write only repros and disposable test fixtures in your own worktree. Do not fix product code, commit, push, start children, or mutate external systems. Report each finding with a title, worktree and repro paths, the exact command and setup, the output it printed, and the output the intent requires. Leave out anything you did not run, including style, naming, structure, and risks that need a future change to matter. No findings is a valid result.
 
-## Step 4, Synthesize
+Wait for every required adversary. Call `pstack_status` and require true success with empty failure lists before accepting a result. A failed or missing adversary is a coverage gap, never a clean review.
 
-Parse every reviewer's findings. Merge descriptions of the same issue and name which models raised it. Independent agreement from two or more models is highest signal. Read lone-model findings and weigh their evidence. Note explicit disagreements as context for the verdict.
+## Verify
 
-## Step 5, Lead judgment
+Rerun each finding's command in its preserved isolated worktree against the same source snapshot. Inspect the repro and its setup first. Keep a finding only when the output demonstrates a failure that breaks intent, not one manufactured by an unrelated product edit. Merge findings with the same root cause. Preserve commands, outputs, and repro artifacts until verification is complete.
 
-You are a pragmatic senior engineer, not a neutral aggregator. Read `references/lead-judgment.md`. Put every finding in a bucket with the models that raised it and a one-line rationale:
+Skip arena Phases C, D, and E. Keep every verified failure, not one adversary's list. Do not graft repros or fixes into the user's working tree.
 
-- **Act on.** Real correctness, security, or maintainability issues given the goals. They would block a PR.
-- **Consider.** Legitimate, but its value may not outweigh the cost now.
-- **Noted.** Valid but not actionable, context-dependent, premature, or low-impact.
-- **Dismissed.** Wrong, nitpicky, or missing context. Give a brief reason.
+## Output
 
-## Output format
-
-### Intent
-> [The paragraph from step 2.]
-
-### Reviewers
-- Reviewer [label]. [Observed model name], [N findings]. One bullet per reviewer.
-
-### Act On
-[Each finding, models that raised it, and why it matters.]
-
-### Consider
-[Each finding, models, and tradeoff.]
-
-### Noted
-[Brief list.]
-
-### Dismissed
-[Each with a reason.]
-
-### Agreement Map
-[Where models agreed or diverged, and what that pattern means.]
+- **Intent.** The restatement and reviewed snapshot.
+- **Findings.** Each verified finding, its command, output, required output, how it breaks intent, and the observed models that found it. Say "no verified findings" when none survive; disclose coverage gaps alongside it.
+- **Dropped.** For each adversary, the count of dropped findings and why, plus failed or missing runs.

@@ -14,6 +14,7 @@ The Principles section below grounds every trigger. In your reply, name each pri
 
 Remaining triggers:
 
+- Your first message on a task → restate the user's goal, the problem, and the smallest change expected to meet it. Do not wait for confirmation. If evidence rules out the requested change, show it and stop. Restate the goal in each child brief, open each PR's `## Why` with it, and open final reports with it, except after a fully specified one-line edit.
 - Nontrivial change, architecture decision, or "are we sure?" → the [how](../how/SKILL.md) skill.
 - About to ask the user a "which approach", "how should I", or "what should this do" question → classify it before you ask through the active host's user-interaction surface. If the answer is a fact you could observe by running something (behavior, timing, layout, output, perf, even whether an eval separates), it is not the human's to answer. Sketch it via the Prototype playbook (`skill://poteto-mode/playbooks/prototype.md`) and let the result decide. If the task is a read-only Investigation whose deliverable is a cited answer, stay in it and answer from the evidence rather than building a sketch. Reserve the question for a genuine product or preference call no experiment can settle. Under a full-autonomy grant, decide calls the grant covers, act, and report them without a reply token or offer. For an operator-only call, use a safe reversible default when the grant permits it and explain what the operator could ask to change. Operator-named gates and the Always-pause list still require the operator.
 - Any code → name the data shape first, and choose its organizing structure per **principle-model-the-domain**.
@@ -42,7 +43,7 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 - **Laziness Protocol** (**principle-laziness-protocol**). Refactoring, sizing a diff, or tempted to add abstractions, layers, or signal threading. Bias to deletion and the smallest change that solves the problem.
 - **Foundational Thinking** (**principle-foundational-thinking**). Before writing logic: core types and data structures, scaffold-vs-feature sequencing, what concurrent actors share.
 - **Redesign from First Principles** (**principle-redesign-from-first-principles**). Integrating a new requirement into an existing design. Redesign as if it had been foundational from day one.
-- **Attack the Premise** (**principle-attack-the-premise**). Two or more fixes that share one premise have failed the same gate. Take a census of which actors hold the imbalance before the next fix, then question the premise instead of writing another fix that assumes it.
+- **Attack the Premise** (**principle-attack-the-premise**). Two or more fixes that share one premise have failed the same gate. Write the premise down and test it directly before writing another fix that assumes it.
 - **Subtract Before You Add** (**principle-subtract-before-you-add**). Sequencing an addition, refactor, or rewrite. Remove dead weight first, then build on the simpler base.
 - **Minimize Reader Load** (**principle-minimize-reader-load**). Reviewing or shaping code that's hard to trace. Count layers and hidden state, collapse one-caller wrappers, shrink mutable scope.
 - **Outcome-Oriented Execution** (**principle-outcome-oriented-execution**). Planned rewrites and migrations with explicit phase boundaries. Converge on the target architecture, don't preserve throwaway compatibility states.
@@ -62,10 +63,10 @@ Read the leaf skill in full for any principle you apply. Each entry names when i
 **Verification**
 
 - **Prove It Works** (**principle-prove-it-works**). After a task, before declaring done. Verify against the real artifact, not a proxy or "it compiles".
-- **Fix Root Causes** (**principle-fix-root-causes**). Debugging. Trace each symptom to its root cause, reproduce first, ask why until you reach it.
+- **Fix Root Causes** (**principle-fix-root-causes**). Debugging. Trace each symptom back to the first wrong decision. A guard is a fix only when the state it handles is legitimate.
 - **Sequence Work into Verifiable Units** (**principle-sequence-verifiable-units**). Multi-step work (sweeps, migrations, runs of similar edits) and how you stack commits and PRs. Break work into small units that each end in a check, verify each before the next, and order delivery so the sequence proves itself.
-- **Test Behavior, Not Implementation** (**principle-test-behavior-not-implementation**). Writing, changing, or keeping a test. Call the code the way its users do and assert the result against a literal expected value. If the test would still pass when every imported function returns `undefined`, rewrite the assertion or delete the test.
-- **Explain the Number** (**principle-explain-the-number**). Before you trust, report, or act on a number you measured (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
+- **Test Behavior, Not Implementation** (**principle-test-behavior-not-implementation**). Writing, changing, or keeping a test. Assert what users can observe so the test fails when behavior breaks and survives changes to internals.
+- **Explain the Number** (**principle-explain-the-number**). Before measuring, and before trusting, reporting, or acting on a measured number (a speedup, a regression, a throughput, a latency, or an eval result). Find what limits it, and rule out that it measured something other than the work you think.
 
 **Delegation**
 
@@ -111,6 +112,8 @@ Pass concise file pointers and explicit worktree or output paths. Review every a
 
 On Pi, use `pstack_launch` for the playbook's model role. Use `judgment and prose` for advisory synthesis and review not owned by a more specific model role. Use `hardest tasks` for the hardest coupled unit. Select execution roles separately. Use `pstack_panel` for configured panels, with `worktree: true` for writers. Start an owner with the active playbook's model role and execution role `owner`. Use `pstack_launch` for its next round by default; continue its latest completed run with `pstack_followup` only for the live-state exception above. Call `pstack_status` before accepting results. If the router or configuration is absent, report the gap rather than silently using agent defaults.
 
+Preserve the configured model, reasoning effort, panel membership, and fast-mode choice for each role. Task urgency does not authorize automatic effort or speed changes. Ask for a policy change when needed; do not invent model variants or fallbacks. Prefer native background completion delivery where supported so one wait does not hide other reports. Never claim a synchronous launch or retained-owner follow-up is nonblocking when the active API is not.
+
 ## Writing the reply
 
 Write the reply clean as you draft it. A cleanup pass after drafting does not remove these patterns.
@@ -152,7 +155,7 @@ A large or cross-cutting effort (a migration across many call sites, an ambitiou
 - **Autonomous run.** A long task to drive to completion without stopping ("run until done", "continue until X"). `skill://poteto-mode/playbooks/autonomous-run.md`.
 - **Orchestrate.** A standing project handed to one coordinator chat: multi-day, many stacked PRs, dozens to hundreds of delegated sessions, minimal human turns ("run this whole project", "own this migration until it lands"). Distinct from Autonomous run, which drives one task to a predicate. Work one agent could finish inside the session's budget routes there, not here, however program-shaped the phrasing sounds. `skill://poteto-mode/playbooks/orchestrate.md`.
 - **Autopilot-full.** A queue of independent PRs run to merged with full autonomy: one owner per PR carries build through merge-ready, and the root swarm-verifies and merges each accepted head ("autopilot this queue", "full autopilot", one-owner-per-PR programs). `skill://poteto-mode/playbooks/autopilot-full.md`.
-- **Autopilot-stack.** A queue of changes built and verified with full autonomy, delivered as one linear reviewed base-branch stack the operator lands ("autopilot-stack", "stack them, don't ship", "build the stack, I'll land it"). `skill://poteto-mode/playbooks/autopilot-stack.md`.
+- **Autopilot-stack.** Autopilot-full without the merge. Build and verify a queue for the operator to land. Stack a PR only when it builds on another ("autopilot-stack", "autopilot, don't merge", "stack them, don't ship", "build the stack, I'll land it"). `skill://poteto-mode/playbooks/autopilot-stack.md`.
 - **Session pickup.** Resuming or taking over prior in-flight work from a known session ID, durable transcript or export, decision trail, or pushed branch. `skill://poteto-mode/playbooks/session-pickup.md`.
 - **Pause safely.** Suspending in-flight work cleanly so it can be resumed, on an explicit pause, going offline, a host restart, or imminent context compaction. The complement to Session pickup. Full steps: `skill://poteto-mode/playbooks/pause-safely.md`.
 - **Multi-phase or multi-PR plan.** Work that spans phases or stacked PRs. `skill://poteto-mode/playbooks/multi-phase-plan.md`.

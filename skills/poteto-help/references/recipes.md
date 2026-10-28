@@ -6,6 +6,7 @@ Swap in the real paths, skills, and done checks. Informal wording works. Pi uses
 
 - `/skill:poteto-mode read <thread>. restate the underlying issue in your own words, in plain english.`
 - `/skill:in-your-own-words <long or messy ask>`
+- `/skill:sharpen <the prompt you're about to send>`
 - `/skill:poteto-mode investigate why <symptom>. give me what we know, what data you used, and your best hypotheses. don't change any code yet.`
 - `use /skill:how to understand <subsystem>. then use /skill:why to find out why it broke recently.`
 - `/skill:recall my work on <topic> from last week, then read <issue>.`
@@ -32,7 +33,9 @@ Swap in the real paths, skills, and done checks. Informal wording works. Pi uses
 
 ## Review and ship
 
-- `/skill:interrogate the whole branch, but skeptically. don't change anything yet. no nitpicks unless it's a real bug or regression.` Read the dismissals too.
+- `/skill:interrogate the whole branch, but skeptically. don't change anything yet. no nitpicks unless it's a real bug or regression.` Read the Dropped list too.
+- `/skill:create-formal-verification-skill prove <property> holds in <module>, even when <steps> interleave or retry.` After merges or refactors, use `/skill:maintain-formal-verification-skill`.
+- `/skill:statechart check <model.tla> and show each rule's shortest failing path in plain words.`
 - `/skill:swarm check every package under <dir> against its check script. one worker per package. one report.`
 - `/skill:poteto-mode open the pr. small ordered commits, evidence in the description.`
 - `/skill:poteto-mode babysit this pr. get it green.` For status only, `/skill:poteto-mode check on pr <number>. anything outstanding?`
@@ -41,9 +44,10 @@ Swap in the real paths, skills, and done checks. Informal wording works. Pi uses
 ## Away and back
 
 - `/skill:poteto-mode im going to bed. <goal> in a fresh worktree off <base>. done means <checks>. keep a decision log. don't ask me before committing. use a verified installed wake mechanism until done. if none is available, checkpoint and report the gap. if you're truly stuck after a few hours, stop and write up why.` Named gates and irreversible actions still require approval.
-- `/skill:ketchup` catches up on changes in this chat and pending decisions, with visuals.
+- `/skill:ketchup` catches up on this chat and lists every call waiting on you, with evidence-based visuals.
+- `/skill:ketchup-video` gives a subtitled video catch-up when rendering and inspection tools are available.
 - `/skill:show-me-your-work catch me up on what you did last night.` Read its Attention section first.
 - `/skill:poteto-mode full autopilot on this queue. each item is independent.`
-- `/skill:poteto-mode autopilot these changes but stack them, don't ship. i'll land the stack.`
+- `/skill:poteto-mode autopilot these changes, but don't merge. i'll land them.`
 - `/skill:reflect capture what we learned so the next run doesn't repeat it.` Approve only edits that change a future decision.
 - `/skill:bro` restates the last reply in plain words.

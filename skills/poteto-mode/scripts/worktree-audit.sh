@@ -48,13 +48,24 @@ origin/*) git fetch origin "+refs/heads/${base#origin/}:refs/remotes/$base" --qu
 esac
 git rev-parse --verify --quiet "$base^{commit}" >/dev/null 2>&1 || { echo "error: base ref not found: $base" >&2; exit 1; }
 
-# PR state by branch, fetched once. Empty if gh is unavailable.
+# Normalize forge states before classifying branches. Keep active PRs ahead of
+# history when a branch name was reused.
 scratch_dir="$HOME/pstack-scratch/worktree-audit"
 mkdir -p "$scratch_dir"
 prs=$(mktemp "$scratch_dir/prs.XXXXXX")
 trap 'rm -f "$prs"' EXIT INT TERM
-gh pr list --author "@me" --state all --limit 1000 \
-	--json number,state,headRefName 2>/dev/null > "$prs" || echo "[]" > "$prs"
+if command -v origin >/dev/null 2>&1 \
+	&& raw=$(origin pr list --author "@me" --state all --limit 1000 \
+		--json number,status,headRef 2>/dev/null) \
+	&& printf '%s' "$raw" | jq -e 'if type == "array" then [.[] | {number, state: (.status | ascii_downcase), head: .headRef}] else error("invalid PR list") end' > "$prs" 2>/dev/null; then
+	:
+elif raw=$(gh pr list --author "@me" --state all --limit 1000 \
+	--json number,state,headRefName 2>/dev/null) \
+	&& printf '%s' "$raw" | jq -e 'if type == "array" then [.[] | {number, state: (.state | ascii_downcase), head: .headRefName}] else error("invalid PR list") end' > "$prs" 2>/dev/null; then
+	:
+else
+	echo "[]" > "$prs"
+fi
 
 now=$(date +%s)
 
@@ -107,13 +118,13 @@ printf '%s\n' "$worktree_records" | awk '/^worktree /{sub(/^worktree /, ""); pri
 	else remote=no-remote; fi
 
 	pr=$([ -n "$branch" ] && jq -r --arg b "$branch" \
-		'.[] | select(.headRefName==$b) | "#\(.number)/\(.state)"' "$prs" 2>/dev/null | head -1)
+		'[.[] | select(.head==$b)] | sort_by(if .state == "open" or .state == "draft" then 0 else 1 end) | .[] | "#\(.number)/\(.state)"' "$prs" 2>/dev/null | head -1)
 	[ -z "$pr" ] && pr="-"
 
 	if [ "$inspect" != ok ]; then bucket=hold-error
 	else case "$lock" in -) ;; *) bucket=hold-locked ;; esac
 	if [ "$lock" = "-" ]; then case "$dirty" in error) bucket=hold-error ;; wip:*) bucket=hold-wip ;; *)
-		case "$pr" in *OPEN*) bucket=hold-open-pr ;; *)
+		case "$pr" in */open|*/draft) bucket=hold-open-pr ;; *)
 			if [ "$merged" = YES ] || [ "$pr" != "-" ]; then bucket=safe
 			else bucket=review; fi ;;
 		esac ;;

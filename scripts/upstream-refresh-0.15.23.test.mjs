@@ -116,6 +116,34 @@ test("worktree audit rejects invalid or missing bases and malformed arguments", 
   } finally { await rm(f.directory, { recursive: true, force: true }); }
 });
 
+for (const mode of ["origin", "gh-fallback", "invalid-origin"]) {
+  test(`worktree audit holds an active PR ahead of old branch history through ${mode}`, async () => {
+    const f = await fixture();
+    try {
+      const wt = f.worktree("reused branch");
+      const bin = join(f.directory, "bin");
+      const originPRs = [
+        { number: 1, status: "merged", headRef: "reused-branch" },
+        { number: 2, status: "draft", headRef: "reused-branch" },
+      ];
+      const ghPRs = [
+        { number: 1, state: "MERGED", headRefName: "reused-branch" },
+        { number: 2, state: "OPEN", headRefName: "reused-branch" },
+      ];
+      await writeFile(join(bin, "origin"), mode === "gh-fallback"
+        ? "#!/bin/sh\nexit 1\n"
+        : `#!/bin/sh\nprintf '%s\\n' '${mode === "origin" ? JSON.stringify(originPRs) : "{}"}'\n`, { mode: 0o755 });
+      await writeFile(join(bin, "gh"), `#!/bin/sh\nprintf '%s\\n' '${JSON.stringify(ghPRs)}'\n`, { mode: 0o755 });
+      const result = f.run();
+      assert.equal(result.status, 0, result.stderr);
+      const row = rows(result.stdout).find(row => row.WORKTREE === wt);
+      assert.equal(row.MERGED, "YES");
+      assert.equal(row.PR, mode === "origin" ? "#2/draft" : "#2/open");
+      assert.equal(row.BUCKET, "hold-open-pr");
+    } finally { await rm(f.directory, { recursive: true, force: true }); }
+  });
+}
+
 test("new skills and help references retain Pi adaptations across future syncs", async () => {
   for (const path of [
     "skills/ketchup/SKILL.md", "skills/in-your-own-words/SKILL.md",
@@ -129,7 +157,7 @@ test("new skills and help references retain Pi adaptations across future syncs",
   assert.match(help, /references\/recipes\.md/);
   const ketchup = await load("skills/ketchup/SKILL.md");
   assert.match(ketchup, /read-only/);
-  assert.match(ketchup, /under 250 words/);
+  assert.match(ketchup, /Never cut items or shrink them to stay under a word count/);
   assert.match(ketchup, /outside the repository/);
   assert.doesNotMatch(ketchup, /\/visualize/);
   assert.match(await load("skills/poteto-help/references/recipes.md"), /\/skill:ketchup/);

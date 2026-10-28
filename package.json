@@ -1,6 +1,6 @@
 {
   "name": "pstack-pi",
-  "version": "0.15.23-pi.1",
+  "version": "0.15.36-pi.1",
   "description": "Portable pstack engineering workflows and Agent Skills for Pi, OMP, OpenCode, Claude Code, and Codex.",
   "type": "module",
   "keywords": [
@@ -50,13 +50,16 @@
     ".claude-plugin",
     ".codex-plugin",
     "upstream.lock.json",
-    "assets"
+    "assets",
+    "!**/node_modules"
   ],
   "scripts": {
     "verify": "node scripts/verify.mjs && npm test && npm run typecheck",
     "test": "node --experimental-strip-types --import ./scripts/pi-host-loader.mjs --test scripts/*.test.mjs",
     "test:sync": "node --test scripts/sync-upstream.test.mjs",
     "test:pi": "node scripts/probe-pi.mjs",
+    "test:statechart": "npm test --prefix skills/statechart/scripts",
+    "typecheck:statechart": "tsc --project skills/statechart/scripts/tsconfig.json",
     "typecheck": "node scripts/typecheck.mjs",
     "sync:check": "node scripts/sync-upstream.mjs --check",
     "sync:apply": "node scripts/sync-upstream.mjs --apply"

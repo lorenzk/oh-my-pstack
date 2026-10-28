@@ -22,6 +22,8 @@ Infer it from the message and conversation. If still unclear, ask one focused mu
 
 Check state only when it changes the answer. Read `$PSTACK_CONFIG` if set, otherwise `.pstack/config.md`. Missing policy means Pi delegation is not configured, not that roles silently get defaults. If the project has no app verification skill or harness, mention [create-verification-skill](../create-verification-skill/SKILL.md) for questions about proving behavior.
 
+For races, invariants, and cases tests rarely reach, mention [create-formal-verification-skill](../create-formal-verification-skill/SKILL.md) when no formal verification skill exists. If covered code changed after a skill's recorded sync commit, mention [maintain-formal-verification-skill](../maintain-formal-verification-skill/SKILL.md). Setup offers app verification and formal verification once each when missing.
+
 When missing policy matters to setup, cost, or model choice, offer setup at most once per chat. If the need is also unclear, batch the two independent questions through `ask_user`. Offer:
 
 - Now. Give `/skill:setup-pstack` and answer their question too.
@@ -58,22 +60,26 @@ The default is poteto-mode. Name another skill directly when the user asks for a
 |---|---|
 | Rigorous non-trivial work | [poteto-mode](../poteto-mode/SKILL.md) |
 | Check the agent understood the goal before it starts | [in-your-own-words](../in-your-own-words/SKILL.md) |
+| Rewrite a prompt deeper, not bigger, without doing its task | [sharpen](../sharpen/SKILL.md) |
 | How code works or where a change belongs | [how](../how/SKILL.md) |
 | Why the code took its shape | [why](../why/SKILL.md) |
 | A plain explanation of a subsystem or change | [teach](../teach/SKILL.md) |
 | Recent context from the user's own work | [recall](../recall/SKILL.md) |
-| Catch up on changes in this chat and pending decisions | [ketchup](../ketchup/SKILL.md) |
+| Catch up on changes in this chat and every pending decision | [ketchup](../ketchup/SKILL.md) |
+| A subtitled video catch-up, when rendering is available | [ketchup-video](../ketchup-video/SKILL.md) |
 | Breakage outside a small diff | [blast-radius](../blast-radius/SKILL.md) |
 | Types and module shape before implementation | [architect](../architect/SKILL.md) |
 | Several attempts at one brief, then base selection | [arena](../arena/SKILL.md) |
 | Parallel slices or a worker race | [swarm](../swarm/SKILL.md) |
-| Independent adversarial review | [interrogate](../interrogate/SKILL.md) |
+| Adversarial review with rerun, executable repros | [interrogate](../interrogate/SKILL.md) |
 | Cheap test-first bug fixing | [tdd](../tdd/SKILL.md) |
 | TypeScript rules | [typescript-best-practices](../typescript-best-practices/SKILL.md) |
 | Independent comment review | [no-comments](../no-comments/SKILL.md) |
 | Clean prose | [unslop](../unslop/SKILL.md), [technical-writing](../technical-writing/SKILL.md) |
 | A simpler version of the last reply | [bro](../bro/SKILL.md) |
 | Scripted app verification | [create-verification-skill](../create-verification-skill/SKILL.md), [maintain-verification-skill](../maintain-verification-skill/SKILL.md) |
+| Create or maintain formal verification against named code | [create-formal-verification-skill](../create-formal-verification-skill/SKILL.md), [maintain-formal-verification-skill](../maintain-formal-verification-skill/SKILL.md) |
+| Check a TLA+ model and show shortest bug paths | [statechart](../statechart/SKILL.md) |
 | Vet a measured performance number | [benchmark-checklist](../benchmark-checklist/SKILL.md) |
 | A bespoke rigorous workflow | [figure-it-out](../figure-it-out/SKILL.md) |
 | An auditable decision trail | [show-me-your-work](../show-me-your-work/SKILL.md) |
@@ -90,7 +96,7 @@ Close calls: how explains behavior, why investigates motivation, and teach combi
 
 ## Playbooks
 
-Playbooks are step lists, not slash commands. Under poteto-mode, "babysit this PR" runs Babysit and stops at merge-ready unless landing was authorized. "Land the stack" runs Shipping. "Take over this branch" runs Session pickup. "Pause safely" runs Pause safely. "Full autopilot on this queue" runs Autopilot-full; "stack them, don't ship" runs Autopilot-stack. "Run the eval playbook" runs Eval.
+Playbooks are step lists, not slash commands. Under poteto-mode, "babysit this PR" runs Babysit and stops at merge-ready unless landing was authorized. "Land the stack" runs Shipping. "Take over this branch" runs Session pickup. "Pause safely" runs Pause safely. "Full autopilot on this queue" runs Autopilot-full; "autopilot, don't merge" or "stack them, don't ship" runs Autopilot-stack, which stacks only dependent PRs and leaves every merge to the operator. "Run the eval playbook" runs Eval.
 
 For phased plans, [Multi-phase plan](../poteto-mode/playbooks/multi-phase-plan.md) writes the plan without implementing. Prototype settles an empirical design fork. The [poteto-mode index](../poteto-mode/SKILL.md) owns the full list. There is no bundled orchestrate slash skill.
 

@@ -56,6 +56,8 @@ Before applying any Accepted edit, present the synthesizer's full Accepted/Rejec
 
 Backlog items file to whatever devex / backlog tracker your team uses automatically. Only the Accepted list waits for approval.
 
+Never edit a managed plugin cache or installed release in place. Before approval, show the exact destination of each proposed edit in the current host's project-local or user-owned skill root. On Pi, use a confirmed skill path, not a guessed package location. After approval, copy the complete skill folder there and edit the copy, preserving its resources. Warn about duplicate names and verify which copy the host loads. If the user explicitly targets a maintained source checkout, edit that source instead. Never push or open a PR as part of Reflect.
+
 For each approved Accepted item, follow the Routing field exactly:
 
 - Trivial existing-skill edit (a one-line bullet, a tightened sentence, a stale fact corrected): parent does directly.

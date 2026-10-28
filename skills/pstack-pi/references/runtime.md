@@ -89,6 +89,10 @@ For a panel, the router launches one child per configured entry. Each child labe
 
 Writer and researcher panels require `worktree: true` for separate child worktrees. Read-only tool profiles still include shell access and are not OS sandboxes.
 
+A workflow that writes executable repros uses an isolated writer execution role, even when its model role is named `interrogate reviewers`. Interrogate uses `implementer` with `worktree: true`, limited to repros and disposable fixtures, never product fixes. Freeze and explicitly seed the source snapshot into each worktree, including scoped uncommitted changes. A managed worktree alone does not imply those changes were copied. Preserve repro artifacts for parent reruns.
+
+Arena's cross-judge pool supplies one configured explicit choice from a different model family than the parent, in pool order. Inherited aliases cannot judge their parent. If no eligible choice exists, disclose that the judge was skipped. Missing or invalid policy still stops dispatch; eligibility does not authorize fallback models or effort changes. Preserve configured model, effort, and fast-mode choices unless the operator changes policy.
+
 The router records requested route data in a custom session entry. It records observed child data after the asynchronous run completes.
 
 Treat the direct `pi-subagents` completion as provisional. Call `pstack_status` before acceptance. Require true success and empty failure lists.

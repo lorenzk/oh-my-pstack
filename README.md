@@ -16,11 +16,13 @@ This README focuses on what has changed in this fork.
 
 ## Changes compared with shrimpwtf/oh-my-pstack
 
-- **Refreshed original Cursor pstack to 0.15.23**, while preserving Pi and
-  portable-host adaptations. Adds `ketchup`, `in-your-own-words`, and help
-  prompting recipes; imports leaner workflows and principles, stronger app
-  readiness checks, PR review-thread pagination, Markdown fence handling, and
-  configurable worktree audit bases. Existing model policy stays unchanged.
+- **Refreshed original Cursor pstack to 0.15.36**, while preserving Pi and
+  portable-host adaptations. Adds `sharpen`, formal-verification creation and
+  maintenance, the TLA+ `statechart` compiler, and `ketchup-video`. Interrogate
+  now verifies executable repros in isolated worktrees. Orchestrate uses host
+  tools instead of its retired bookkeeping scripts; Autopilot-stack stacks only
+  dependent PRs. Includes watcher and plan-checker fixes. Existing model policy
+  and root-owned approval and merge gates stay unchanged.
 - **Integrated and extended deterministic Pi routing from
   [upstream PR #1](https://github.com/shrimpwtf/oh-my-pstack/pull/1)**
   (Gabriel Aguiar's work). The router resolves configured model roles, launches
@@ -39,9 +41,10 @@ This README focuses on what has changed in this fork.
   sync regression tests, strict TypeScript checks, and a Pi registration probe.
 
 Details: [Pi routing adaptation](docs/pi-routing-adaptation.md),
-[0.15.2 refresh](docs/upstream-refresh-2026-09.md), and
-[0.15.10 refresh](docs/upstream-refresh-0.15.10.md), and
-[0.15.23 refresh](docs/upstream-refresh-0.15.23.md).
+[0.15.2 refresh](docs/upstream-refresh-2026-09.md),
+[0.15.10 refresh](docs/upstream-refresh-0.15.10.md),
+[0.15.23 refresh](docs/upstream-refresh-0.15.23.md), and
+[0.15.36 refresh](docs/upstream-refresh-0.15.36.md).
 
 ## Install this fork on Pi
 
@@ -75,12 +78,27 @@ npm run verify
 npm run typecheck
 npm run test:sync
 npm run test:pi
+
+# Bundled watcher and plan checker
+bun install --cwd skills/poteto-mode/scripts --frozen-lockfile
+bun run --cwd skills/poteto-mode/scripts test
+
+# Statechart compiler and recorded TLC fixtures
+npm install --prefix skills/statechart/scripts --ignore-scripts --no-package-lock
+npm run test:statechart
+npm run typecheck:statechart
 ```
 
 Managed and global npm Pi installations are detected automatically. Set `PI_BIN`
 to select a different launcher. For custom wrappers, set `PI_PACKAGE_DIR` to the
 installed `@earendil-works/pi-coding-agent` package directory for tests and
 TypeScript checks (and `PI_BIN` for the registration probe).
+
+Live statechart model-checking tests additionally require Java 11+ and a TLC
+1.7.4 jar selected with `JAVA` and `TLA2TOOLS`; without them those tests are
+skipped. The statechart launcher can install its pinned tools with mise when
+permitted. SVG rendering uses Pele separately, outside the repository. Video
+catch-up requires available rendering and frame-inspection tools.
 
 The original Cursor repository remains the content authority, pinned in
 `upstream.lock.json`. Protected adaptations require a human merge decision;

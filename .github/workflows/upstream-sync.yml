@@ -47,8 +47,14 @@ jobs:
       - name: Test bundled scripts
         run: |
           bun install --cwd skills/poteto-mode/scripts --frozen-lockfile
-          bun test orch watch-pr
+          bun run --cwd skills/poteto-mode/scripts test
           bunx tsc --project skills/poteto-mode/scripts/watch-pr/tsconfig.json --noEmit --strict
+
+      - name: Test statechart compiler
+        run: |
+          npm install --prefix skills/statechart/scripts --ignore-scripts --no-package-lock
+          npm run test:statechart
+          npm run typecheck:statechart
 
       - name: Open update pull request
         uses: peter-evans/create-pull-request@v7

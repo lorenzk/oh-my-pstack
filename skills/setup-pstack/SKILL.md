@@ -74,7 +74,10 @@ Ask the user to accept the current values or change specific lines. Offer only d
 
 For `arena runners`, `architect runners`, and `interrogate reviewers`, list
 length controls fan-out. `arena cross-judge pool` supplies candidates for one
-judge, not a judge per entry. Prefer a different model family when available.
+judge, not a judge per entry. Only explicit choices from a different model family
+than the parent are eligible, in pool order. `inherit-parent` and `auto` never
+judge. Explain that a pool with no eligible choice skips the judge and reports
+the gap; do not replace configured entries with vendor defaults.
 The current how workflow no longer has a critics phase; do not add it during setup.
 
 `swarm workers` accepts one or more models. Use `modelNumber` on each `pstack_launch` to select a race arm.
@@ -130,3 +133,7 @@ If the host lacks per-child model selection, report that no configuration was wr
 ## 7. Offer a verification skill
 
 Check whether the project has a real application verification skill or an existing test harness. If neither exists, offer the sibling **create-verification-skill** skill once.
+
+## 8. Offer a formal verification skill
+
+If the project has no formal verification skill, offer the sibling [create-formal-verification-skill](../create-formal-verification-skill/SKILL.md) once to check a property that tests rarely reach. On yes, invoke it using the active host's skill mechanism. On no, continue without pushing. This offer does not authorize tool installation, product edits, or model-policy changes.

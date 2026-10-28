@@ -42,17 +42,17 @@ If a candidate fails to produce output, proceed with N-1 and note the dropout in
 
 ## Phase C: Cross-judge
 
-After all Phase B candidates complete, resolve the `arena cross-judge pool` model role. Prefer a configured model whose family differs from the parent. On Pi, call `pstack_launch` with execution role `reviewer` and the selected `modelNumber`. If the pool is absent, stop the Pi dispatch. The judge sees the rubric and candidates by path label, scores each criterion, and recommends a base with rationale. Start it with the parent's Phase D review, not with active writers.
+After all Phase B candidates complete, resolve the `arena cross-judge pool` model role. On Pi, call `pstack_launch` with execution role `reviewer` and the selected `modelNumber`. The pool supplies one judge, never a panel. Consider only configured explicit choices from a different model family than the parent, in pool order. `auto` and `inherit-parent` resolve to the parent, so they never judge. Use the live model's family metadata when available; do not confuse different providers for different model families. Do not adjust efforts, fast mode, or model IDs. Missing policy or invalid configuration stops dispatch, not silent substitution. If no configured cross-family choice is eligible, skip the judge and disclose the gap; the parent still reviews every candidate. If the parent's family cannot be established, disclose that the check could not run rather than claiming cross-model review. The judge sees the rubric and candidates by path label, scores each criterion, and recommends a base with rationale. Start it with the parent's Phase D review, not with active writers.
 
 ## Phase D: Pick a base
 
 Read every candidate end to end before picking.
 
-Score each candidate against the rubric criterion by criterion, not on holistic feel. Compare against the cross-judge. Agreement on the base confirms the pick. Disagreement means one of you is biased or the rubric was ambiguous. Read both rationales before deciding.
+Score each candidate against the rubric criterion by criterion, not on holistic feel. Compare against the cross-judge when one ran. Agreement on the base confirms the pick. Disagreement means one of you is biased or the rubric was ambiguous. Read both rationales before deciding.
 
 Pick the base on which candidate a future maintainer can extend most easily without breaking invariants. Prefer the cleaner boundary or smaller API when two feel tied, per the Laziness Protocol.
 
-Record the pick and the reason in a short synthesis note alongside the base artifact, including the cross-judge's verdict.
+Record the pick and the reason in a short synthesis note alongside the base artifact, including the cross-judge's verdict or why it was skipped.
 
 ## Phase E: Graft
 
@@ -72,4 +72,4 @@ If verification surfaces a problem the arena did not catch, either Phase A was w
 
 ## Outputs
 
-One synthesized artifact, with a short synthesis note alongside naming the base and why, the cross-judge's verdict, each graft with its source candidate, what was rejected and why, any convergence or dropouts, and the verification result.
+One synthesized artifact, with a short synthesis note alongside naming the base and why, the cross-judge's verdict or disclosed gap, each graft with its source candidate, what was rejected and why, any convergence or dropouts, and the verification result.
