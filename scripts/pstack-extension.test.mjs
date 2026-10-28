@@ -2,8 +2,15 @@ import assert from "node:assert/strict";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import test from "node:test";
+import test, { after, before } from "node:test";
 import pstackRouter from "../extensions/pstack-router/index.ts";
+
+// Always exercise fixture configs, not the operator's exported config override.
+const configOverride = process.env.PSTACK_CONFIG;
+before(() => { delete process.env.PSTACK_CONFIG; });
+after(() => {
+  if (configOverride !== undefined) process.env.PSTACK_CONFIG = configOverride;
+});
 
 const rpcBridge = process.env.PSTACK_SUBAGENTS_RPC_MODULE
   ? await import(process.env.PSTACK_SUBAGENTS_RPC_MODULE)

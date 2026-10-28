@@ -64,13 +64,23 @@ pi install /absolute/path/to/oh-my-pstack
 
 ## Development
 
+Install Pi first and keep its launcher on `PATH`. Development checks use that
+host's packages; this checkout does not install a separate Pi or create a local
+`node_modules/.bin/pi`. Node.js 22.19 or newer is required.
+
 ```bash
 npm install
 npm test
 npm run verify
 npm run typecheck
 npm run test:sync
+npm run test:pi
 ```
+
+Managed and global npm Pi installations are detected automatically. Set `PI_BIN`
+to select a different launcher. For custom wrappers, set `PI_PACKAGE_DIR` to the
+installed `@earendil-works/pi-coding-agent` package directory for tests and
+TypeScript checks (and `PI_BIN` for the registration probe).
 
 The original Cursor repository remains the content authority, pinned in
 `upstream.lock.json`. Protected adaptations require a human merge decision;
