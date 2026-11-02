@@ -1,9 +1,9 @@
 # Pi routing on the refreshed pstack branch
 
-This change adapts [upstream PR #1](https://github.com/shrimpwtf/oh-my-pstack/pull/1)
+This change adapts Gabriel Aguiar's original Pi routing contribution
 at `f2b3ee59ff6925a336bee24612b7338f17090a09`. The original router, tests, and
-policy separation are Gabriel Aguiar's work; this branch integrates them with
-the existing 0.15.2 portability refresh.
+policy separation are his work; this branch integrates them with the existing
+0.15.2 portability refresh.
 
 ## Branch separation
 
@@ -22,7 +22,7 @@ until that refresh lands. Keep the existing refresh PR unchanged. For a later
 Pi-only PR, rebase these adaptation commits onto upstream main after the refresh
 lands, or use the refresh branch as the review base in a fork.
 
-## Differences from PR #1
+## Differences from the original routing contribution
 
 - Keep package version `0.15.2-pi.1`, upstream pin
   `6ed0f7a9504f577d7529064103cecce9be7dfc5e`, Benny source roots, make-bot-ui,
@@ -48,7 +48,8 @@ lands, or use the refresh branch as the review base in a fork.
   snapshots, advance safe no-change pins, detect managed-file drift, and delete
   only files proven to have belonged to the old upstream snapshot. Never delete
   local-only skills merely because upstream lacks them.
-- Do not import PR #1's separate create-skill workflow or unrelated older prose.
+- Do not import the original contribution's separate create-skill workflow or
+  unrelated older prose.
 
 ## Local activation
 

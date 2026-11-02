@@ -2,19 +2,18 @@
 
 <img src="assets/logo.png" alt="pstack logo" width="128">
 
-**This is [lorenzk's fork](https://github.com/lorenzk/oh-my-pstack) of
-[shrimpwtf/oh-my-pstack](https://github.com/shrimpwtf/oh-my-pstack), which is a
-portable adaptation of Lauren Tan's original
+**[oh-my-pstack](https://github.com/lorenzk/oh-my-pstack) is an independently
+maintained Pi adaptation of Lauren Tan's original
 [Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack).**
 
 **This fork is optimized for working with Pi, not other agent hosts.**
-Other-host support is inherited from upstream and is not this fork's focus.
+Other-host support is retained but is not this fork's focus.
 
 For the general workflow overview, see
-[the upstream README](https://github.com/shrimpwtf/oh-my-pstack#readme).
-This README focuses on what has changed in this fork.
+[Cursor pstack](https://github.com/cursor/plugins/tree/main/pstack).
+This README focuses on the Pi adaptation.
 
-## Changes compared with shrimpwtf/oh-my-pstack
+## Pi adaptations
 
 - **Refreshed original Cursor pstack to 0.15.36**, while preserving Pi and
   portable-host adaptations. Adds `sharpen`, formal-verification creation and
@@ -23,9 +22,7 @@ This README focuses on what has changed in this fork.
   tools instead of its retired bookkeeping scripts; Autopilot-stack stacks only
   dependent PRs. Includes watcher and plan-checker fixes. Existing model policy
   and root-owned approval and merge gates stay unchanged.
-- **Integrated and extended deterministic Pi routing from
-  [upstream PR #1](https://github.com/shrimpwtf/oh-my-pstack/pull/1)**
-  (Gabriel Aguiar's work). The router resolves configured model roles, launches
+- **Integrated and extended Gabriel Aguiar's deterministic Pi routing.** The router resolves configured model roles, launches
   through `pi-subagents`, and records requested versus observed routes in a
   validated session ledger. Adds `pstack_launch`, `pstack_panel`,
   `pstack_followup`, `pstack_status`, `/pstack-doctor`, and `/pstack-routes`.
@@ -107,5 +104,5 @@ the updater never silently overwrites them.
 ## License and attribution
 
 MIT. See [LICENSE](LICENSE) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
-Credit to Lauren Tan for the original pstack, shrimpwtf for the portable
-adaptation, and Gabriel Aguiar for the deterministic Pi router integrated here.
+Credit to Lauren Tan for the original pstack and Gabriel Aguiar for the
+deterministic Pi router integrated here.
