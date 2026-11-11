@@ -68,12 +68,12 @@ void ready;
 // reformat cannot drift the directive away from the line that actually errors.
 const refused = {
   kind: "allowed",
-  basis: "rollup",
+  basis: "merge-state",
   mergeStateStatus: "BLOCKED",
-  headRollupState: "FAILURE",
+  headRollupState: "SUCCESS",
 } as const;
 
-// @ts-expect-error BLOCKED with a failing rollup is a refusal, not an allowance.
+// @ts-expect-error BLOCKED is a refusal even with a successful rollup.
 const refusalIsNotAllowed: GitHubMergeAllowed = refused;
 
 // @ts-expect-error CI cannot be clean while GitHub refuses the merge.

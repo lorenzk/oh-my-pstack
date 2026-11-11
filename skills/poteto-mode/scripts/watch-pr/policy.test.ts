@@ -52,7 +52,10 @@ describe("readiness truth table", () => {
     ][] = [
       ["BLOCKED", "FAILURE", "refused"],
       ["BLOCKED", "ERROR", "refused"],
-      ["BLOCKED", "PENDING", "allowed"],
+      ["BLOCKED", "PENDING", "refused"],
+      ["BLOCKED", "EXPECTED", "refused"],
+      ["BLOCKED", "SUCCESS", "refused"],
+      ["BLOCKED", null, "refused"],
       ["UNSTABLE", "FAILURE", "allowed"],
       ["UNKNOWN", "ERROR", "allowed"],
       ["UNKNOWN", "EXPECTED", "allowed"],

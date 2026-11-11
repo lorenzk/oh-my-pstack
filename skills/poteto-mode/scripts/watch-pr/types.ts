@@ -98,21 +98,14 @@ export interface CommitRollup {
 export interface GitHubMergeRefusal {
   readonly kind: "refused";
   readonly mergeStateStatus: "BLOCKED";
-  readonly headRollupState: "ERROR" | "FAILURE";
+  readonly headRollupState: RollupState;
 }
-export type GitHubMergeAllowed =
-  | {
-      readonly kind: "allowed";
-      readonly basis: "merge-state";
-      readonly mergeStateStatus: Exclude<MergeStateStatus, "BLOCKED">;
-      readonly headRollupState: RollupState;
-    }
-  | {
-      readonly kind: "allowed";
-      readonly basis: "rollup";
-      readonly mergeStateStatus: "BLOCKED";
-      readonly headRollupState: Exclude<RollupState, "ERROR" | "FAILURE">;
-    };
+export type GitHubMergeAllowed = {
+  readonly kind: "allowed";
+  readonly basis: "merge-state";
+  readonly mergeStateStatus: Exclude<MergeStateStatus, "BLOCKED">;
+  readonly headRollupState: RollupState;
+};
 export type GitHubMergeAssessment = GitHubMergeAllowed | GitHubMergeRefusal;
 interface CiBase {
   readonly source: CheckRead["source"];

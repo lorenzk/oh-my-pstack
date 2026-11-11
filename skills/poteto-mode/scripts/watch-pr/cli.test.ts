@@ -191,6 +191,49 @@ describe("main", () => {
     expect(harness.stdout[0]).not.toContain('"kind":"QUEUE"');
   });
 
+  it("does not report READY when only previews pass while GitHub blocks merging", async () => {
+    const reader = fakeReader({
+      facts: { mergeStateStatus: "BLOCKED" },
+      fastPath: { kind: "checks", checks: [passingCheck("Vercel preview")] },
+      commitRollups: [{ oid: "head", state: "SUCCESS" }],
+    });
+    const harness = testRuntime(reader);
+    const code = await main(
+      ["--owner", "owner", "--repo", "repo", "--pr", "1"],
+      harness.runtime
+    );
+    const verdict: unknown = JSON.parse(harness.stdout[0]);
+    expect(verdict).toMatchObject({
+      kind: "BLOCKER",
+      exitCode: 4,
+      blocker: {
+        kind: "failing-checks",
+        ci: {
+          kind: "ci-github-rejected",
+          failed: [],
+          github: { mergeStateStatus: "BLOCKED", headRollupState: "SUCCESS" },
+        },
+      },
+    });
+    expect(code).toBe(4);
+    expect(harness.stdout).toHaveLength(1);
+  });
+
+  it("describes a GitHub block without claiming exposed checks failed", async () => {
+    const reader = fakeReader({
+      facts: { mergeStateStatus: "BLOCKED" },
+      fastPath: { kind: "checks", checks: [passingCheck("Vercel preview")] },
+      commitRollups: [{ oid: "head", state: "SUCCESS" }],
+    });
+    const harness = testRuntime(reader);
+    expect(await main(
+      ["--owner", "owner", "--repo", "repo", "--pr", "1", "--status-only", "--pretty"],
+      harness.runtime
+    )).toBe(0);
+    expect(harness.stdout.join("")).toContain("GitHub blocks merging");
+    expect(harness.stdout.join("")).not.toContain("GitHub reports failing checks");
+  });
+
   it("returns exit 4 for a hidden GitHub-side CI refusal", async () => {
     const reader = fakeReader({
       facts: { mergeStateStatus: "BLOCKED" },

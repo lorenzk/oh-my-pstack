@@ -9,20 +9,12 @@ export function assessGitHubMerge(args: {
   readonly mergeStateStatus: T.MergeStateStatus;
   readonly headRollupState: T.RollupState;
 }): T.GitHubMergeAssessment {
-  if (args.mergeStateStatus === "BLOCKED") {
-    if (args.headRollupState === "ERROR" || args.headRollupState === "FAILURE")
-      return {
-        kind: "refused",
-        mergeStateStatus: args.mergeStateStatus,
-        headRollupState: args.headRollupState,
-      };
+  if (args.mergeStateStatus === "BLOCKED")
     return {
-      kind: "allowed",
-      basis: "rollup",
+      kind: "refused",
       mergeStateStatus: args.mergeStateStatus,
       headRollupState: args.headRollupState,
     };
-  }
   return {
     kind: "allowed",
     basis: "merge-state",
