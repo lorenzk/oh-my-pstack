@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
 import { isAbsolute, join, resolve } from "node:path";
 import { StringEnum } from "@earendil-works/pi-ai";
 import {
@@ -186,7 +188,10 @@ function rpcCall(
 
 function resolveConfigPath(cwd: string): string {
   const override = process.env.PSTACK_CONFIG?.trim();
-  if (!override) return join(cwd, ".pstack", "config.md");
+  if (!override) {
+    const project = join(cwd, ".pstack", "config.md");
+    return existsSync(project) ? project : join(homedir(), ".pstack", "config.md");
+  }
   return isAbsolute(override) ? override : resolve(cwd, override);
 }
 

@@ -42,7 +42,7 @@ Runtime profile selection never selects the pstack model role.
 
 On Pi, use `pstack_launch` for one child. Use `pstack_panel` for all entries in one panel role.
 
-The tools read `$PSTACK_CONFIG` when set. Otherwise, they read `.pstack/config.md` from the target project.
+The tools read `$PSTACK_CONFIG` when set. Otherwise, they read `.pstack/config.md` from the target project if present, then fall back to `~/.pstack/config.md`.
 
 The router expands both shared upstream labels. It resolves the exact model role from the active workflow.
 

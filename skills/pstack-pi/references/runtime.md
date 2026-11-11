@@ -52,7 +52,7 @@ Every child brief must stand alone. It must name the goal, execution role, writa
 
 ## Model role configuration
 
-Read `$PSTACK_CONFIG` when the variable is set. Otherwise, read `.pstack/config.md` from the current project. The environment path replaces the project path.
+Read `$PSTACK_CONFIG` when the variable is set. Otherwise, read `.pstack/config.md` from the current project if present, then fall back to `~/.pstack/config.md`. The environment path replaces the project path.
 
 The left side of each line is a pstack model role. The right side is a concrete child model choice or a panel list.
 
